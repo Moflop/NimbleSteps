@@ -1,0 +1,4 @@
+// 1.21.1	2026-01-05T11:02:25.9781934	Tags for minecraft:block mod id nimblesteps
+238bef50108cd5a61c2c18bcae59a92bcc9fd7b1 data/nimblesteps/tags/block/climbable.json
+b1865a7c05d973d31ffa3849a7bb6717021aca16 data/nimblesteps/tags/block/common_ignored_blocks.json
+53526cd95c809314459dae6a0b5e512f9a761443 data/nimblesteps/tags/block/jump_ignored_blocks.json

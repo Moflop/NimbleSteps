@@ -1,0 +1,23 @@
+{
+  "slide": {
+    "subtitle": "nimblesteps.subtitle.slide",
+    "sounds": [
+      "nimblesteps:slide"
+    ]
+  },
+  "landing_roll": {
+    "subtitle": "nimblesteps.subtitle.landing_roll",
+    "sounds": [
+      "nimblesteps:landing_roll"
+    ]
+  },
+  "jump": {
+    "subtitle": "nimblesteps.subtitle.jump",
+    "sounds": [
+      "nimblesteps:jump_1",
+      "nimblesteps:jump_2",
+      "nimblesteps:jump_3"
+    ]
+  }
+}
+
