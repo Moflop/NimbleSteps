@@ -1,4 +1,4 @@
-package mod.arcomit.nimblesteps.event.skills.refactoring;
+package mod.arcomit.nimblesteps.event.skills;
 
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.ServerConfig;
@@ -37,8 +37,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class SlideHandler {
-	private static final int SLIDE_DURATION = 10;
-	private static final double STOP_SLIDING_VELOCITY_THRESHOLD = 0.1;
+	private static final int SLIDE_DURATION = 10; // 滑铲持续时间（以刻为单位）
 
 	private static final float SLIDE_SOUND_VOLUME = 1.0f;
 	private static final float SLIDE_SOUND_PITCH = 1.0f;

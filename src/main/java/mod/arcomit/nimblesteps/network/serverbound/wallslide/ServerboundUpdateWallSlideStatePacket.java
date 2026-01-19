@@ -2,7 +2,7 @@ package mod.arcomit.nimblesteps.network.serverbound.wallslide;
 
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.attachment.NimbleStepsState;
-import mod.arcomit.nimblesteps.event.skills.refactoring.WallSlideHandler;
+import mod.arcomit.nimblesteps.event.skills.WallSlideHandler;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

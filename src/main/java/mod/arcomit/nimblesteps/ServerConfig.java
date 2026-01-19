@@ -57,10 +57,12 @@ public class ServerConfig {
 	public static ModConfigSpec.BooleanValue ENABLE_WALL_JUMP;
 	public static ModConfigSpec.BooleanValue WALL_JUMP_RESET_WALL_RUN;
 	public static ModConfigSpec.BooleanValue WALL_JUMP_RESET_WALL_CLIMB;
-	public static ModConfigSpec.BooleanValue ENABLE_WALL_CLING;
-	public static ModConfigSpec.DoubleValue WALL_CLING_MOVE_SPEED;
+	public static ModConfigSpec.BooleanValue ENABLE_ARMHANG;
+	public static ModConfigSpec.DoubleValue ARMHANG_MOVE_SPEED;
 	public static ModConfigSpec.BooleanValue ENABLE_SUPPORT_WALL_JUMP;
 	public static ModConfigSpec.BooleanValue SUPPORT_WALL_JUMP_RESET_WALL_CLIMB;
+	public static ModConfigSpec.BooleanValue ENABLE_MOUNT;
+	public static ModConfigSpec.IntValue MOUNT_REQUIRED_SPACE_HEIGHT;
 	public static ModConfigSpec.BooleanValue ENABLE_WALL_CLIMB;
 	public static ModConfigSpec.IntValue WALL_CLIMB_DURATION;
 	public static ModConfigSpec.DoubleValue WALL_CLIMB_SPEED;
@@ -74,9 +76,9 @@ public class ServerConfig {
 
 		// 移除速度限制
 		REMOVE_SPEED_LIMITS = builder
-			.comment("Remove speed limits imposed by server.\nThis removes most rollbacks but makes it easier to cheat on a server. (default: true)")
+			.comment("Remove speed limits imposed by server.\nThis removes most rollbacks but makes it easier to cheat on a server. (default: false)")
 			.translation("nimblesteps.configuration.online_settings.remove_speed_limits")
-			.define("removeSpeedLimits", true);
+			.define("removeSpeedLimits", false);
 
 		builder.pop();
 
@@ -292,15 +294,15 @@ public class ServerConfig {
 			.translation("nimblesteps.configuration.wall_movement_settings.wall_jump_reset_wall_climb")
 			.define("wallJumpResetWallClimb", true);
 		// 启用垂挂
-		ENABLE_WALL_CLING = builder
-			.comment("Enable wall cling (default: true)")
-			.translation("nimblesteps.configuration.wall_movement_settings.enable_wall_cling")
-			.define("enableWallCling", true);
+		ENABLE_ARMHANG = builder
+			.comment("Enable armhang (default: true)")
+			.translation("nimblesteps.configuration.wall_movement_settings.enable_armhang")
+			.define("enableArmhang", true);
 		// 垂挂移动速度
-		WALL_CLING_MOVE_SPEED = builder
-			.comment("Wall cling movement speed (default: 0.15)")
-			.translation("nimblesteps.configuration.wall_movement_settings.wall_cling_move_speed")
-			.defineInRange("wallClingMoveSpeed", 0.15, 0.05, 1.0);
+		ARMHANG_MOVE_SPEED = builder
+			.comment("Armhang movement speed (default: 0.15)")
+			.translation("nimblesteps.configuration.wall_movement_settings.armhang_move_speed")
+			.defineInRange("armhangMoveSpeed", 0.15, 0.05, 1.0);
 		// 启用撑墙跳
 		ENABLE_SUPPORT_WALL_JUMP = builder
 			.comment("Enable support wall jump (default: true)")
@@ -311,6 +313,16 @@ public class ServerConfig {
 			.comment("Support wall jump resets wall climb (default: true)")
 			.translation("nimblesteps.configuration.wall_movement_settings.support_wall_jump_reset_wall_climb")
 			.define("supportWallJumpResetWallClimb", true);
+		// 启用支撑上墙
+		ENABLE_MOUNT = builder
+			.comment("Enable mount (climb up onto wall from armhang) (default: true)")
+			.translation("nimblesteps.configuration.wall_movement_settings.enable_mount")
+			.define("enableMount", true);
+		// 支撑上墙所需空间高度
+		MOUNT_REQUIRED_SPACE_HEIGHT = builder
+			.comment("Required space height above the wall for mounting (default: 2)")
+			.translation("nimblesteps.configuration.wall_movement_settings.mount_required_space_height")
+			.defineInRange("mountRequiredSpaceHeight", 2, 1, 4);
 		// 启用爬墙
 		ENABLE_WALL_CLIMB = builder
 			.comment("Enable wall climb (default: true)")
@@ -374,10 +386,12 @@ public class ServerConfig {
 	public static boolean enableWallJump;
 	public static boolean wallJumpResetWallRun;
 	public static boolean wallJumpResetWallClimb;
-	public static boolean enableWallCling;
-	public static double wallClingMoveSpeed;
+	public static boolean enableArmhang;
+	public static double armhangMoveSpeed;
 	public static boolean enableSupportWallJump;
 	public static boolean supportWallJumpResetWallClimb;
+	public static boolean enableMount;
+	public static int mountRequiredSpaceHeight;
 	public static boolean enableWallClimb;
 	public static int wallClimbDuration;
 	public static double wallClimbSpeed;
@@ -428,10 +442,12 @@ public class ServerConfig {
 		enableWallJump = ENABLE_WALL_JUMP.get();
 		wallJumpResetWallRun = WALL_JUMP_RESET_WALL_RUN.get();
 		wallJumpResetWallClimb = WALL_JUMP_RESET_WALL_CLIMB.get();
-		enableWallCling = ENABLE_WALL_CLING.get();
-		wallClingMoveSpeed = WALL_CLING_MOVE_SPEED.get();
+		enableArmhang = ENABLE_ARMHANG.get();
+		armhangMoveSpeed = ARMHANG_MOVE_SPEED.get();
 		enableSupportWallJump = ENABLE_SUPPORT_WALL_JUMP.get();
 		supportWallJumpResetWallClimb = SUPPORT_WALL_JUMP_RESET_WALL_CLIMB.get();
+		enableMount = ENABLE_MOUNT.get();
+		mountRequiredSpaceHeight = MOUNT_REQUIRED_SPACE_HEIGHT.get();
 		enableWallClimb = ENABLE_WALL_CLIMB.get();
 		wallClimbDuration = WALL_CLIMB_DURATION.get();
 		wallClimbSpeed = WALL_CLIMB_SPEED.get();

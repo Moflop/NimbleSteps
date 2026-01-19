@@ -24,8 +24,8 @@ public class NsSounds {
 	public static final Supplier<SoundEvent> LANDING_ROLL = SOUNDS.register("landing_roll",
 		() -> SoundEvent.createVariableRangeEvent(NimbleStepsMod.prefix("landing_roll")));
 
-	public static final Supplier<SoundEvent> JUMP = SOUNDS.register("jump",
-		() -> SoundEvent.createVariableRangeEvent(NimbleStepsMod.prefix("jump")));
+	public static final Supplier<SoundEvent> WALL_JUMP = SOUNDS.register("wall_jump",
+		() -> SoundEvent.createVariableRangeEvent(NimbleStepsMod.prefix("wall_jump")));
 
 	public static void register(IEventBus bus) {
 		SOUNDS.register(bus);

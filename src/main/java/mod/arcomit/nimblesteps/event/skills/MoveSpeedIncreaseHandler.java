@@ -1,4 +1,4 @@
-package mod.arcomit.nimblesteps.event.skills.refactoring;
+package mod.arcomit.nimblesteps.event.skills;
 
 import mod.arcomit.nimblesteps.ServerConfig;
 import mod.arcomit.nimblesteps.NimbleStepsMod;
@@ -20,7 +20,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class MoveSpeedIncreaseHandler {
 	private static final ResourceLocation SPEED_MULTIPLIER_MODIFIER_ID = NimbleStepsMod.prefix("speed_multiplier");
-	private static final double VANILLA_SPEED_MULTIPLIER = 1.0;
+	private static final double VANILLA_SPEED_MULTIPLIER = 1.0; // 原版玩家默认的速度倍率
 
 	@SubscribeEvent
 	public static void adjustPlayerSpeed(PlayerTickEvent.Post event) {

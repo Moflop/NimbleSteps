@@ -3,7 +3,7 @@ package mod.arcomit.nimblesteps.network.serverbound.wallclimb;
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.attachment.NimbleStepsState;
-import mod.arcomit.nimblesteps.event.skills.refactoring.WallClimbHandler;
+import mod.arcomit.nimblesteps.event.skills.WallClimbHandler;
 import mod.arcomit.nimblesteps.init.NsAttachmentTypes;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

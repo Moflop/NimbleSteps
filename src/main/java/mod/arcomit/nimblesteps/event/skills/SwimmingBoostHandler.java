@@ -1,4 +1,4 @@
-package mod.arcomit.nimblesteps.event.skills.refactoring;
+package mod.arcomit.nimblesteps.event.skills;
 
 import mod.arcomit.nimblesteps.ServerConfig;
 import mod.arcomit.nimblesteps.NimbleStepsMod;
@@ -30,7 +30,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class SwimmingBoostHandler {
-	private static final double ZERO_THRESHOLD = 1.0E-7;
+	private static final double ZERO_THRESHOLD = 1.0E-7; // 零阈值
 
 	public static final float SWIMMING_BOOST_SOUND_VOLUME = 0.9f;
 	public static final float SWIMMING_BOOST_SOUND_PITCH = 0.8f;

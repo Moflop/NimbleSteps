@@ -108,6 +108,23 @@ public class CollisionUtils {
 	}
 
 	/**
+	 * 检测实体的碰撞箱是否与忽略标签外的任何方块发生方块碰撞。
+	 *
+	 * @param entity 要检测的实体。
+	 * @param ignoredBlocksTag 要忽略的方块标签。
+	 * @return 如果有固体方块阻挡，则返回 true。
+	 */
+	public static boolean isEntityCollidingWithBlock(
+		LivingEntity entity,
+		TagKey<Block> ignoredBlocksTag)
+	{
+		return isBlockCollision(
+			entity.level(),
+			entity.getBoundingBox(),
+			ignoredBlocksTag);
+	}
+
+	/**
 	 * 检测指定包围盒是否与忽略标签以外的任何方块发生碰撞。
 	 *
 	 * @param level        所在的世界。

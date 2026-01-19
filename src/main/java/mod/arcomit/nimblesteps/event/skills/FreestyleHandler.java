@@ -1,4 +1,4 @@
-package mod.arcomit.nimblesteps.event.skills.refactoring;
+package mod.arcomit.nimblesteps.event.skills;
 
 import mod.arcomit.nimblesteps.ServerConfig;
 import mod.arcomit.nimblesteps.NimbleStepsMod;

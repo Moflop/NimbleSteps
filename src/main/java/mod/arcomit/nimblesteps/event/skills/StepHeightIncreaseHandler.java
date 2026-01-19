@@ -1,4 +1,4 @@
-package mod.arcomit.nimblesteps.event.skills.refactoring;
+package mod.arcomit.nimblesteps.event.skills;
 
 import mod.arcomit.nimblesteps.ServerConfig;
 import mod.arcomit.nimblesteps.NimbleStepsMod;
@@ -20,7 +20,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class StepHeightIncreaseHandler {
 	private static final ResourceLocation STEP_HEIGHT_MODIFIER_ID = NimbleStepsMod.prefix("step_height");
-	private static final double VANILLA_STEP_HEIGHT = 0.6;
+	private static final double VANILLA_STEP_HEIGHT = 0.6; // 原版玩家默认的可翻越方块高度
 
 	@SubscribeEvent
 	public static void adjustPlayerStepHeight(PlayerTickEvent.Post event) {

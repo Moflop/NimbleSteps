@@ -3,7 +3,7 @@ package mod.arcomit.nimblesteps.network.serverbound.swimmingboost;
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.nimblesteps.attachment.NimbleStepsState;
-import mod.arcomit.nimblesteps.event.skills.refactoring.SwimmingBoostHandler;
+import mod.arcomit.nimblesteps.event.skills.SwimmingBoostHandler;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;

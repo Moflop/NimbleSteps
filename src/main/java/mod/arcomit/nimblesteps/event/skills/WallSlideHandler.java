@@ -1,4 +1,4 @@
-package mod.arcomit.nimblesteps.event.skills.refactoring;
+package mod.arcomit.nimblesteps.event.skills;
 
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.ServerConfig;
@@ -35,14 +35,14 @@ import java.util.List;
  */
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class WallSlideHandler {
-	private static final int WALL_SLIDE_GRACE_PERIOD = 6;
-	private static final double WALL_ADHESION_FORCE = 0.1;
-	private static final double HORIZONTAL_SLOWDOWN = 0.8;
-	private static final double VERTICAL_SLOWDOWN = 0.7;
+	private static final int WALL_SLIDE_GRACE_PERIOD = 6; // 松开跳跃键后最大滑墙持续时间
+	private static final double WALL_ADHESION_FORCE = 0.1; // 墙面吸附力
+	private static final double HORIZONTAL_SLOWDOWN = 0.8; // 水平方向减速比例
+	private static final double VERTICAL_SLOWDOWN = 0.7; // 垂直方向减速比例
 
-	private static final double HEAD_BOX_MIN_HEIGHT_RATIO = 0.85;
-	private static final double FEET_BOX_MAX_HEIGHT_RATIO = 0.3;
-	private static final double COLLISION_CHECK_DISTANCE = 0.15;
+	private static final double HEAD_BOX_MIN_HEIGHT_RATIO = 0.85; // 头部检测箱最小高度比例
+	private static final double FEET_BOX_MAX_HEIGHT_RATIO = 0.3; // 脚部检测箱最大高度比例
+	private static final double COLLISION_CHECK_DISTANCE = 0.15; // 墙面碰撞检测距离
 
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent(priority = EventPriority.LOW)
@@ -165,7 +165,7 @@ public class WallSlideHandler {
 
 	private static @NotNull List<AABB> getAabbs(Player player) {
 		Vec3 playerPos = player.position();
-		double halfWidth = player.getBbWidth() * 0.5;
+		double halfWidth = player.getBbWidth() / 2;
 		double height = player.getBbHeight();
 
 		// 构造脚部和头部的检测箱

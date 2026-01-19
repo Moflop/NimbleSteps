@@ -7,49 +7,92 @@ import mod.arcomit.nimblesteps.init.NsTags;
 import mod.arcomit.nimblesteps.utils.CollisionUtils;
 import mod.arcomit.nimblesteps.utils.PlayerStateUtils;
 import net.minecraft.client.player.Input;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
- * 墙面垂挂处理器。
+ * 垂挂处理器。
  *
  * @author Arcomit
- * @since 2026-01-04
+ * @since 2026-01-16
  */
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class ArmhangHandler {
+	private static final double COLLISION_CHECK_DISTANCE = 0.5; // 碰撞检测距离
+	// 底部碰撞检测高度比例，原版玩家站立为1.8格，眼睛高度为1.62，而34%约等于0.6格，确保玩家不会在脚部的位置（一格）触发垂挂
+	private static final double BOTTOM_COLLISION_MIN_HEIGHT_RATIO = 0.34;
+	private static final double HANGING_POINT_ADHESION_FACTOR = 0.1; // 抓握点吸附力
 
-	private static final Vec3 UP_VECTOR = new Vec3(0, 1, 0);
+	private static final double CORNER_OFFSET = 0.05; // 外角转角时的位置偏移
+	private static final double EDGE_SEARCH_STEP = 0.05; // 边缘搜索步长
+	private static final int MAX_EDGE_SEARCH_ITERATIONS = 10; // 最大边缘搜索迭代次数
 
-	/** 玩家面向墙面的最小点积阈值（夹角约60度以内）。 */
-	private static final double FACING_WALL_DOT_THRESHOLD = 0.5;
+	@SubscribeEvent
+	public static void tryStartArmhang(PlayerTickEvent.Post event) {
+		Player player = event.getEntity();
+		NimbleStepsState state = NimbleStepsState.getNimbleState(player);
 
-	private static final double EPSILON = 1.0E-5;
-	private static final double WALL_ADHESION_FORCE = 0.2;
-	private static final double MOVEMENT_PROBE_DISTANCE = 0.2;
-	private static final double INPUT_PROBE_DISTANCE = 0.05;
-	private static final double COLLISION_CHECK_DISTANCE = 0.5;
-	private static final double BOTTOM_COLLISION_HEIGHT = 0.62;
-	private static final double boxOffset = 0.05;
+		if (!canStartArmhang(player, state)) {
+			return;
+		}
 
-	// ==================== 事件处理 ====================
+		Direction facing = player.getDirection();
+		if (isClimbableAtDirectionAndPosition(player, player.position(), facing)) {
+			startArmhang(state, facing);
+		}
+	}
 
-	/**
-	 * 处理玩家在垂挂状态下的输入控制。
-	 *
-	 * <p>在客户端限制玩家输入，确保只能进行沿墙移动。
-	 */
+	@SubscribeEvent(priority = EventPriority.LOW)
+	public static void handlerArmhang(PlayerTickEvent.Post event) {
+		Player player = event.getEntity();
+		NimbleStepsState state = NimbleStepsState.getNimbleState(player);
+		if (!state.isArmHanging()) {
+			return;
+		}
+
+		if (!canArmhang(player, state)) {
+			endArmhang(state);
+			return;
+		}
+
+		applyArmhangMovement(player, state);
+	}
+
+	@SubscribeEvent
+	public static void checkArmhangInterrupt(PlayerTickEvent.Post event) {
+		Player player = event.getEntity();
+		NimbleStepsState state = NimbleStepsState.getNimbleState(player);
+		if (!state.isArmHanging()) {
+			return;
+		}
+
+		Direction armhangingDirection = Direction.from3DDataValue(state.getArmHangingDirection());
+		boolean isClimbable = isClimbableAtDirectionAndPosition(player, player.position(), armhangingDirection);
+		if (!isClimbable || player.isShiftKeyDown()) {
+			endArmhang(state);
+		}
+
+	}
+
+	// 本地复制左右移动输入控制垂挂时的运动方向，取消原输入防止额外移动
+	private static float LOCAL_LEFT_IMPULSE;
+
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public static void onMovementInput(MovementInputUpdateEvent event) {
+	public static void disableMoveWhileArmhanging(MovementInputUpdateEvent event) {
 		Player player = event.getEntity();
 		NimbleStepsState state = NimbleStepsState.getNimbleState(player);
 
@@ -58,301 +101,219 @@ public class ArmhangHandler {
 		}
 
 		Input input = event.getInput();
-		Direction clingDirection = Direction.from3DDataValue(state.getArmHangingDirection());
-		Vec3 clingDirectionVector = Vec3.atLowerCornerOf(clingDirection.getNormal());
+		input.forwardImpulse = 0;
 
-		// 如果玩家没有面向墙面，阻止所有输入
-		if (!isFacingWall(player, clingDirectionVector)) {
-			blockAllMovementInput(input);
+		Direction armhangingDirection = Direction.from3DDataValue(state.getArmHangingDirection());
+		boolean isFacingArmhangingDirection = player.getDirection() == armhangingDirection;
+		if (isFacingArmhangingDirection) {
+			LOCAL_LEFT_IMPULSE = input.leftImpulse;
 		} else {
-			// 限制输入为沿墙移动
-			restrictToWallMovement(player, input, clingDirection, clingDirectionVector);
+			LOCAL_LEFT_IMPULSE = 0;// 没有面向攀爬方向时，不允许左右移动
 		}
+		input.leftImpulse = 0;
 	}
 
-	/**
-	 * 处理垂挂状态的逻辑刻。
-	 *
-	 * <p>在服务端和客户端同时运行，处理垂挂的开始、维持和结束。
-	 */
-	@SubscribeEvent
-	public static void onPlayerTick(PlayerTickEvent.Post event) {
-		Player player = event.getEntity();
-		NimbleStepsState state = NimbleStepsState.getNimbleState(player);
-
-		if (state.isArmHanging()) {
-			handleArmHang(player, state);
-		} else {
-			tryStartArmHang(player, state);
-		}
-	}
-
-	// ==================== 垂挂状态管理 ====================
-
-	/**
-	 * 处理维持垂挂状态。
-	 *
-	 * @param player 玩家实体
-	 * @param state 玩家的 NimbleSteps 状态
-	 */
-	private static void handleArmHang(Player player, NimbleStepsState state) {
-		// 检查是否应该停止垂挂
-		if (shouldStopArmHang(player)) {
-			stopArmHang(state);
-			return;
-		}
-
-		Direction clingDirection = Direction.from3DDataValue(state.getArmHangingDirection());
-
-		// 检查是否仍然可以垂挂在当前墙面
-		if (!canArmHangOnWall(player, clingDirection)) {
-			stopArmHang(state);
-			return;
-		}
-
-		// 固定玩家Y坐标，阻止掉落
-		player.setPos(player.getX(), state.getArmHangingY(), player.getZ());
-		player.setDeltaMovement(Vec3.ZERO);
-		player.resetFallDistance();
-
-		// 应用沿墙移动
-		applyWallMovement(player, state, clingDirection);
-	}
-
-	/**
-	 * 尝试开始垂挂。
-	 *
-	 * @param player 玩家实体
-	 * @param state 玩家的 NimbleSteps 状态
-	 */
-	private static void tryStartArmHang(Player player, NimbleStepsState state) {
-		// 条件检查：必须在空中、下落中、已跳跃、未潜行
-		if (player.onGround() || player.isShiftKeyDown() || !state.isHasJumped()) {
-			return;
-		}
-
-		// 必须是下落状态
-		if (player.getDeltaMovement().y < 0) {
-			Direction facingDirection = player.getDirection();
-			if (canArmHangOnWall(player, facingDirection)) {
-				startArmHang(player, state, facingDirection);
-			}
-		}
-	}
-
-	private static void startArmHang(Player player, NimbleStepsState state, Direction direction) {
+	private static void startArmhang(NimbleStepsState state, Direction direction) {
 		state.setArmHanging(true);
 		state.setArmHangingDirection(direction.get3DDataValue());
-		state.setArmHangingY(player.getY());
-		player.setDeltaMovement(Vec3.ZERO);
 	}
 
-	private static void stopArmHang(NimbleStepsState state) {
+	public static void endArmhang(NimbleStepsState state) {
 		state.setArmHanging(false);
-		state.setArmHangingDirection(-1);
+		state.resetArmHangingDirection();
 	}
 
-	private static boolean shouldStopArmHang(Player player) {
-		return player.isShiftKeyDown() || player.onGround();
+	private static void applyArmhangMovement(Player player, NimbleStepsState state) {
+		player.setPos(player.getX(), player.getY(), player.getZ());
+		player.setDeltaMovement(Vec3.ZERO);
+
+		// 内角旋转检测：检查玩家朝向的方向是否可攀爬
+		handleInnerCornerRotation(player, state);
+
+		// 抓握点吸附
+		Direction armhangingDirection = Direction.from3DDataValue(state.getArmHangingDirection());
+		Vec3 armhangingNormal = new Vec3(armhangingDirection.getStepX(), 0, armhangingDirection.getStepZ());
+		Vec3 adhesionForce = armhangingNormal.scale(HANGING_POINT_ADHESION_FACTOR);
+		player.move(MoverType.PLAYER, adhesionForce);
+
+		// 左右移动在客户端执行
+		if (player instanceof LocalPlayer localPlayer && LOCAL_LEFT_IMPULSE != 0) {
+			// 计算左右移动方向（垂直于垂挂方向）
+			// 左右方向是垂挂方向的法向量在水平面上的旋转
+			Vec3 rightDirection = new Vec3(armhangingDirection.getStepZ(), 0, -armhangingDirection.getStepX());
+			Vec3 horizontalMovement = rightDirection.scale(LOCAL_LEFT_IMPULSE).normalize().scale(ServerConfig.armhangMoveSpeed);
+
+			// 记录移动前的位置
+			Vec3 beforeMove = player.position();
+			player.move(MoverType.PLAYER, horizontalMovement);
+			Vec3 afterMove = player.position();
+
+			// 外角旋转检测：检查是否到达无法保持攀爬的位置
+			if (!isClimbableAtDirectionAndPosition(player, afterMove, armhangingDirection)) {
+				// 尝试外角旋转
+				boolean cornerRotated = handleOuterCornerRotation(player, state, afterMove, LOCAL_LEFT_IMPULSE);
+				if (!cornerRotated) {
+					// 如果无法旋转，尝试迭代寻找安全的边缘位置
+					Vec3 safeEdgePosition = findSafeEdgePosition(player, beforeMove, afterMove, armhangingDirection);
+					if (safeEdgePosition != null) {
+						player.setPos(safeEdgePosition.x, safeEdgePosition.y, safeEdgePosition.z);
+					} else {
+						// 如果找不到安全位置，则还原位置
+						player.setPos(beforeMove.x, beforeMove.y, beforeMove.z);
+					}
+				}
+			}
+			localPlayer.sendPosition();
+		}
+
+		player.resetFallDistance();
 	}
 
-	// ==================== 输入控制 ====================
 
-	private static void blockAllMovementInput(Input input) {
-		input.forwardImpulse = 0;
-		input.leftImpulse = 0;
-	}
+	/**
+	 * 处理内角旋转：如果玩家朝向的方向可攀爬且与当前攀爬方向不同，则切换攀爬方向
+	 */
+	private static void handleInnerCornerRotation(Player player, NimbleStepsState state) {
+		Direction playerFacing = player.getDirection();
+		Direction currentArmhangDirection = Direction.from3DDataValue(state.getArmHangingDirection());
 
-	private static float LEFT_IMPULSE;
-	private static void restrictToWallMovement(
-		Player player, Input input, Direction clingDirection, Vec3 clingDirectionVector) {
-		// 禁止前后移动
-		input.forwardImpulse = 0;
-
-		System.out.println(input.leftImpulse);
-		LEFT_IMPULSE = input.leftImpulse;
-		input.leftImpulse = 0;
-		// 处理左右移动输入
-		if (input.leftImpulse != 0) {
-			boolean movingLeft = input.leftImpulse > 0;
-			Vec3 strafeVector = getWallStrafeVector(clingDirectionVector, input.leftImpulse);
-			Vec3 probeVector = strafeVector.normalize().scale(INPUT_PROBE_DISTANCE);
-
-			// 检查是否可以转角或继续沿墙移动
-			if (!tryTurn(player, clingDirection, movingLeft)
-				&& !canArmHangAt(player, player.position().add(probeVector), clingDirection)) {
-				input.leftImpulse = 0;
+		// 如果玩家朝向与当前攀爬方向不同，检查是否可以切换到朝向的墙
+		if (playerFacing != currentArmhangDirection) {
+			if (isClimbableAtDirectionAndPosition(player, player.position(), playerFacing)) {
+				state.setArmHangingDirection(playerFacing.get3DDataValue());
 			}
 		}
-	}
-
-	// ==================== 墙面移动逻辑 ====================
-
-	private static void applyWallMovement(
-		Player player, NimbleStepsState state, Direction clingDirection) {
-		Vec3 clingDirectionVector = Vec3.atLowerCornerOf(clingDirection.getNormal());
-		Vec3 adhesionForce = clingDirectionVector.scale(WALL_ADHESION_FORCE);
-
-		// 1. 如果玩家未面向墙面，尝试转角 (保持原有逻辑)
-		if (!isFacingWall(player, clingDirectionVector)) {
-			if (trySwitchToCornerWall(player, state, clingDirection)) {
-				return;
-			}
-			player.setDeltaMovement(adhesionForce);
-			return;
-		}
-
-		// 2. 获取横向移动输入
-		double strafeInput = LEFT_IMPULSE;
-		if (Math.abs(strafeInput) <= EPSILON) {
-			player.setDeltaMovement(adhesionForce);
-			return;
-		}
-
-		// 3. 计算预期的沿墙移动向量
-		Vec3 strafeMovement =
-			getWallStrafeVector(clingDirectionVector, strafeInput)
-				.scale(ServerConfig.wallClingMoveSpeed);
-
-		// 4. 尝试转角 (如果遇到内角/外角，优先转弯，保持流畅性)
-		if (performTurn(player, state, clingDirection, strafeInput > 0)) {
-			return;
-		}
-
-		// 5. 【核心改进】边缘保护检测
-		// 检查完整位移是否会导致脱手（悬空）
-		Vec3 targetPos = player.position().add(strafeMovement);
-		if (!canArmHangAt(player, targetPos, clingDirection)) {
-			// 如果完整位移不安全，则启用“迭代逼近”寻找边缘
-			strafeMovement = findSafeEdgePosition(player, strafeMovement, clingDirection);
-		}
-
-		// 应用最终计算出的位移（可能被削减过，正好停在边缘）
-		player.setDeltaMovement(strafeMovement.add(adhesionForce));
 	}
 
 	/**
-	 * 迭代寻找安全的边缘位置。
-	 * <p>
-	 * 类似原版潜行的逻辑：如果原本的移动会导致玩家掉下墙壁，
-	 * 此方法会尝试逐步减小移动距离，直到找到一个既靠近边缘又安全的位置。
+	 * 处理外角旋转：当玩家移动到无法保持攀爬的位置时，尝试转角
+	 *
+	 * @param player 玩家实体
+	 * @param state 玩家状态
+	 * @param afterMove 移动后的位置
+	 * @param leftImpulse 左右移动输入（正值为右，负值为左）
+	 * @return 是否成功转角
 	 */
-	private static Vec3 findSafeEdgePosition(Player player, Vec3 originalMove, Direction clingDirection) {
-		Vec3 normalizedDir = originalMove.normalize();
-		double totalDistance = originalMove.length();
+	private static boolean handleOuterCornerRotation(Player player, NimbleStepsState state,
+							 Vec3 afterMove, float leftImpulse) {
+		Direction currentDirection = Direction.from3DDataValue(state.getArmHangingDirection());
 
-		// 步进值：越小越精准，但性能开销越大。0.05 是原版潜行的经验值。
-		double increment = 0.05;
+		// 向原攀爬方向偏移0.05生成新坐标
+		Vec3 directionOffset = new Vec3(currentDirection.getStepX(), 0, currentDirection.getStepZ()).scale(CORNER_OFFSET);
+		Vec3 cornerPosition = afterMove.add(directionOffset);
 
-		// 从原定距离开始，反向递减，直到找到安全点
-		// 我们使用 currentDist > 0 来防止死循环，并处理极小距离
-		for (double currentDist = totalDistance; currentDist > 0; currentDist -= increment) {
-
-			// 如果剩余距离极小，直接视为 0 (防止抖动)
-			if (currentDist < EPSILON) {
-				return Vec3.ZERO;
-			}
-
-			// 构造试探性向量
-			Vec3 trialMove = normalizedDir.scale(currentDist);
-			Vec3 trialPos = player.position().add(trialMove);
-
-			// 检查在这个位置是否还能挂住墙
-			if (canArmHangAt(player, trialPos, clingDirection)) {
-				return trialMove; // 找到了！这是离边缘最近的安全点
-			}
+		// 检查转角位置是否有足够空间
+		double halfWidth = player.getBbWidth() / 2;
+		AABB cornerBox = new AABB(
+			cornerPosition.x - halfWidth,
+			cornerPosition.y,
+			cornerPosition.z - halfWidth,
+			cornerPosition.x + halfWidth,
+			cornerPosition.y + player.getBbHeight(),
+			cornerPosition.z + halfWidth);
+		if (CollisionUtils.isBlockCollision(player.level(), cornerBox, BlockTags.AIR)) {
+			return false;
 		}
 
-		// 如果连一点点距离都移动不了，则完全停止
-		return Vec3.ZERO;
-	}
-
-	private static boolean trySwitchToCornerWall(
-		Player player, NimbleStepsState state, Direction currentClingDirection) {
-		// 尝试顺时针方向
-		Direction clockwise = currentClingDirection.getClockWise();
-		if (canArmHangAt(player, player.position(), clockwise)
-			&& isFacingWall(player, Vec3.atLowerCornerOf(clockwise.getNormal()))) {
-			state.setArmHangingDirection(clockwise.get3DDataValue());
-			return true;
+		// 确定要检测的新方向
+		Direction newDirection;
+		if (leftImpulse > 0) {
+			// 向左移动时，检测顺时针方向（左转）
+			newDirection = currentDirection.getClockWise();
+		} else {
+			// 向右移动时，检测逆时针方向（右转）
+			newDirection = currentDirection.getCounterClockWise();
 		}
 
-		// 尝试逆时针方向
-		Direction counterClockwise = currentClingDirection.getCounterClockWise();
-		if (canArmHangAt(player, player.position(), counterClockwise)
-			&& isFacingWall(player, Vec3.atLowerCornerOf(counterClockwise.getNormal()))) {
-			state.setArmHangingDirection(counterClockwise.get3DDataValue());
+		// 检查新方向是否可攀爬
+		if (isClimbableAtDirectionAndPosition(player, cornerPosition, newDirection)) {
+			// 设置玩家到转角位置并切换攀爬方向
+			player.setPos(cornerPosition.x, cornerPosition.y, cornerPosition.z);
+			state.setArmHangingDirection(newDirection.get3DDataValue());
 			return true;
 		}
 
 		return false;
 	}
 
-	private static boolean tryTurn(Player player, Direction clingDirection, boolean movingLeft) {
-		Direction targetDirection =
-			movingLeft ? clingDirection.getCounterClockWise() : clingDirection.getClockWise();
-		return canArmHangAt(player, player.position(), targetDirection);
-	}
+	/**
+	 * 迭代寻找安全的边缘位置：从起始位置向目标位置逐步搜索，找到最后一个可以攀爬的安全位置
+	 *
+	 * @param player 玩家实体
+	 * @param startPos 起始位置（移动前的安全位置）
+	 * @param endPos 目标位置（移动后的不安全位置）
+	 * @param direction 当前攀爬方向
+	 * @return 找到的安全边缘位置，如果找不到则返回null
+	 */
+	private static Vec3 findSafeEdgePosition(Player player,
+						 Vec3 startPos, Vec3 endPos, Direction direction) {
+		// 计算移动方向向量
+		Vec3 moveDirection = endPos.subtract(startPos);
+		double totalDistance = moveDirection.length();
 
-	private static boolean performTurn(
-		Player player, NimbleStepsState state, Direction clingDirection, boolean movingLeft) {
-		Direction targetDirection =
-			movingLeft ? clingDirection.getCounterClockWise() : clingDirection.getClockWise();
-
-		// 必须面向目标墙面才能转向
-		if (!isFacingWall(player, Vec3.atLowerCornerOf(targetDirection.getNormal()))) {
-			return false;
+		// 如果移动距离太小，不进行搜索
+		if (totalDistance < EDGE_SEARCH_STEP) {
+			return null;
 		}
 
-		if (canArmHangAt(player, player.position(), targetDirection)) {
-			state.setArmHangingDirection(targetDirection.get3DDataValue());
-			return true;
+		// 归一化移动方向
+		Vec3 normalizedDirection = moveDirection.normalize();
+
+		// 迭代搜索：从起始位置开始，逐步向目标位置移动
+		Vec3 lastSafePosition = null;
+		for (int i = 1; i <= MAX_EDGE_SEARCH_ITERATIONS; i++) {
+			double searchDistance = EDGE_SEARCH_STEP * i;
+
+			// 如果搜索距离超过总距离，停止搜索
+			if (searchDistance >= totalDistance) {
+				break;
+			}
+
+			// 计算当前搜索位置
+			Vec3 searchPosition = startPos.add(normalizedDirection.scale(searchDistance));
+
+			// 检查该位置是否可以攀爬
+			if (isClimbableAtDirectionAndPosition(player, searchPosition, direction)) {
+				lastSafePosition = searchPosition;
+			} else {
+				// 找到第一个不安全的位置，停止搜索
+				break;
+			}
 		}
-		return false;
+
+		return lastSafePosition;
 	}
 
-	private static Vec3 getWallStrafeVector(Vec3 clingDirectionVector, double magnitude) {
-		Vec3 wallLeftVector = UP_VECTOR.cross(clingDirectionVector).normalize();
-		return wallLeftVector.scale(magnitude);
+	private static boolean canStartArmhang(Player player, NimbleStepsState state) {
+		boolean isFalling = player.fallDistance > 0f;
+		return ServerConfig.enableArmhang
+			&& !state.isArmHanging()
+			&& !player.onGround()
+			&& state.isHasJumped()
+			&& isFalling
+			&& !player.isShiftKeyDown()
+			&& canArmhang(player, state);
 	}
 
-	// ==================== 条件检查 ====================
-
-	private static boolean isFacingWall(Player player, Vec3 clingDirectionVector) {
-		return player.getLookAngle().dot(clingDirectionVector) > FACING_WALL_DOT_THRESHOLD;
+	private static boolean canArmhang(Player player, NimbleStepsState state) {
+		return !state.isCrawling()
+			&& !state.isSliding()
+			&& !player.onClimbable()
+			&& !player.isInWater()
+			&& !player.isInLava()
+			&& PlayerStateUtils.isAbleToAction(player);
 	}
 
-	private static boolean canArmHangOnWall(Player player, Direction direction) {
-		if (!ServerConfig.enableWallCling || isPlayerStateInvalid(player)) {
-			return false;
-		}
-		return canArmHangAt(player, player.position(), direction);
+	private static boolean isClimbableAtDirectionAndPosition(Player player, Vec3 position, Direction direction) {
+		return isClimbableAtSpecificHeight(player, position, direction, player.getEyeHeight())
+			|| isClimbableAtSpecificHeight(player, position, direction, player.getBbHeight());
 	}
 
-	private static boolean isPlayerStateInvalid(Player player) {
-		NimbleStepsState state = NimbleStepsState.getNimbleState(player);
-		return state.isSliding()
-			|| state.isCrawling()
-			|| player.onClimbable()
-			|| player.isInWater()
-			|| player.isInLava()
-			|| player.isSwimming()
-			|| !PlayerStateUtils.isAbleToAction(player);
-	}
-
-	private static boolean canArmHangAt(Player player, Vec3 position, Direction direction) {
-		return hasValidWallCollision(player, position, direction);
-	}
-
-	private static boolean hasValidWallCollision(Player player, Vec3 position, Direction direction) {
-		return checkCollisionAtHeight(player, position, direction, player.getEyeHeight())
-			|| checkCollisionAtHeight(player, position, direction, player.getBbHeight());
-	}
-
-	private static boolean checkCollisionAtHeight(
+	private static boolean isClimbableAtSpecificHeight(
 		Player player, Vec3 position, Direction direction, double baseHeight) {
-		double halfWidth = player.getBbWidth() * 0.5;
-		double topOffset = player.getBbHeight() - player.getEyeHeight();
+		double halfWidth = player.getBbWidth() / 2;
+		double height = player.getBbHeight();
+		double topOffset = height - player.getEyeHeight();
 
 		double minX = position.x - halfWidth;
 		double maxX = position.x + halfWidth;
@@ -361,24 +322,10 @@ public class ArmhangHandler {
 
 		double baseY = position.y + baseHeight;
 
-		// 顶部碰撞箱：确保顶部有空间可供手臂抓握
-		AABB topBox =
-			new AABB(
-				minX,
-				baseY,
-				minZ,
-				maxX,
-				baseY + topOffset,
-				maxZ);
-		// 底部碰撞箱：检测墙面
-		AABB bottomBox =
-			new AABB(
-				minX,
-				baseY,
-				minZ,
-				maxX,
-				baseY - BOTTOM_COLLISION_HEIGHT,
-				maxZ);
+		// 顶部检测：必须有抓握点，没有方块阻挡
+		AABB topBox = new AABB(minX, baseY, minZ, maxX, baseY + topOffset, maxZ);
+		// 底部检测：必须有方块支撑点
+		AABB bottomBox = new AABB(minX, baseY, minZ, maxX, baseY - (height * BOTTOM_COLLISION_MIN_HEIGHT_RATIO), maxZ);
 
 		return CollisionUtils.isCollidingWithBlockInDirection(
 			player.level(),
@@ -386,12 +333,12 @@ public class ArmhangHandler {
 			direction,
 			COLLISION_CHECK_DISTANCE,
 			NsTags.Blocks.SCAFFOLDING_BLOCKS)
-			&&
-			!CollisionUtils.isCollidingWithBlockInDirection(
-				player.level(),
-				topBox,
-				direction,
-				COLLISION_CHECK_DISTANCE,
-				NsTags.Blocks.SCAFFOLDING_BLOCKS);
+			&& !CollisionUtils.isCollidingWithBlockInDirection(
+			player.level(),
+			topBox,
+			direction,
+			COLLISION_CHECK_DISTANCE,
+			NsTags.Blocks.SCAFFOLDING_BLOCKS);
 	}
 }
+

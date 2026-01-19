@@ -1,4 +1,4 @@
-package mod.arcomit.nimblesteps.event.skills.refactoring;
+package mod.arcomit.nimblesteps.event.skills;
 
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.ServerConfig;
@@ -15,7 +15,7 @@ import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
  */
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class SafeFallHandler {
-	private static final float VANILLA_SAFE_FALL_DISTANCE = 3.0f;
+	private static final float VANILLA_SAFE_FALL_DISTANCE = 3.0f; // 原版玩家安全落地的距离
 
 	@SubscribeEvent
 	public static void adjustFallDistanceForSafeFall(LivingFallEvent event) {

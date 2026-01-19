@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
@@ -43,5 +44,37 @@ public class DirectionUtils {
 			}
 		}
 		return closestDirection;
+	}
+
+	/**
+	 * 根据玩家的YRot获取方向向量（支持8方向，包括对角线）
+	 * @param yRot 玩家的水平旋转角度
+	 * @return 对应的方向向量
+	 */
+	public static Vec3 getDirectionFromYRot(float yRot) {
+		// 标准化角度到 -180° 到 180°
+		yRot = Mth.wrapDegrees(yRot);
+
+		int x = 0, z = 0;
+
+		// Z方向：-67.5° 到 67.5° 为 Z+1
+		if (yRot >= -67.5f && yRot <= 67.5f) {
+			z = 1;
+		}
+		// Z方向：112.5° 到 180° 或 -180° 到 -112.5° 为 Z-1
+		else if (yRot >= 112.5f || yRot <= -112.5f) {
+			z = -1;
+		}
+
+		// X方向：22.5° 到 157.5° 为 X-1
+		if (yRot >= 22.5f && yRot <= 157.5f) {
+			x = -1;
+		}
+		// X方向：-157.5° 到 -22.5° 为 X+1
+		else if (yRot >= -157.5f && yRot <= -22.5f) {
+			x = 1;
+		}
+
+		return new Vec3(x, 0, z);
 	}
 }

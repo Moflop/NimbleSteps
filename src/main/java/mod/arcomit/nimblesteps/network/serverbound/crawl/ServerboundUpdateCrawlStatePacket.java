@@ -2,7 +2,7 @@ package mod.arcomit.nimblesteps.network.serverbound.crawl;
 
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.attachment.NimbleStepsState;
-import mod.arcomit.nimblesteps.event.skills.refactoring.CrawlHandler;
+import mod.arcomit.nimblesteps.event.skills.CrawlHandler;
 import mod.arcomit.nimblesteps.init.NsAttachmentTypes;
 import mod.arcomit.nimblesteps.network.clientbound.ClientboundUpdateCrawlStatePacket;
 import net.minecraft.network.FriendlyByteBuf;

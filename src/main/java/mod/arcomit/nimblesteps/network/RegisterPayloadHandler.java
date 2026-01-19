@@ -4,7 +4,8 @@ import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.network.clientbound.ClientboundUpdateCrawlStatePacket;
 import mod.arcomit.nimblesteps.network.serverbound.crawl.ServerboundUpdateCrawlStatePacket;
 import mod.arcomit.nimblesteps.network.serverbound.jump.ServerboundUseSwimmingJumpPacket;
-import mod.arcomit.nimblesteps.network.serverbound.jump.SupportWallJumpPacket;
+import mod.arcomit.nimblesteps.network.serverbound.jump.ServerboundSupportWallJumpPacket;
+import mod.arcomit.nimblesteps.network.serverbound.jump.ServerboundMountPacket;
 import mod.arcomit.nimblesteps.network.serverbound.jump.WallJumpPacket;
 import mod.arcomit.nimblesteps.network.serverbound.roll.ServerboundSetLandingRollWindowPacket;
 import mod.arcomit.nimblesteps.network.serverbound.slide.ServerboundCancelSlidePacket;
@@ -105,9 +106,14 @@ public class RegisterPayloadHandler {
 			WallJumpPacket::handle
 		);
 		registrar.playToServer(
-			SupportWallJumpPacket.TYPE,
-			SupportWallJumpPacket.STREAM_CODEC,
-			SupportWallJumpPacket::handle
+			ServerboundSupportWallJumpPacket.TYPE,
+			ServerboundSupportWallJumpPacket.STREAM_CODEC,
+			ServerboundSupportWallJumpPacket::handle
+		);
+		registrar.playToServer(
+			ServerboundMountPacket.TYPE,
+			ServerboundMountPacket.STREAM_CODEC,
+			ServerboundMountPacket::handle
 		);
 		registrar.playToServer(
 			ServerboundUseSwimmingJumpPacket.TYPE,

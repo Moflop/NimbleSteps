@@ -1,4 +1,4 @@
-package mod.arcomit.nimblesteps.event.skills.refactoring;
+package mod.arcomit.nimblesteps.event.skills;
 
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.ServerConfig;
@@ -39,18 +39,18 @@ import java.util.List;
  */
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class WallClimbHandler {
-	private static final double ZERO_THRESHOLD = 1.0E-7;
+	private static final double ZERO_THRESHOLD = 1.0E-7; // 零阈值
 
-	private static final double WALL_ADHESION_FORCE = 0.1;
+	private static final double WALL_ADHESION_FORCE = 0.1; // 墙面吸附力
 
 	private static final float SOUND_DISTANCE_MULTIPLIER = 1.0F;
 	private static final float SOUND_VOLUME_MULTIPLIER = 0.15F;
 
-	private static final double HEAD_BOX_MIN_HEIGHT_RATIO = 0.85;
-	private static final double FEET_BOX_MAX_HEIGHT_RATIO = 0.3;
-	private static final double COLLISION_CHECK_DISTANCE = 0.1;
+	private static final double HEAD_BOX_MIN_HEIGHT_RATIO = 0.85; // 头部检测箱最小高度比例
+	private static final double FEET_BOX_MAX_HEIGHT_RATIO = 0.3; // 脚部检测箱最大高度比例
+	private static final double COLLISION_CHECK_DISTANCE = 0.15; // 墙面碰撞检测距离
 
-	private static final int MAX_TICKS_SINCE_JUMP = 15;
+	private static final int MAX_TICKS_SINCE_JUMP = 15; // 在跳跃后15个刻内才能开始墙跑
 
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
@@ -244,7 +244,7 @@ public class WallClimbHandler {
 
 	private static @NotNull List<AABB> getAabbs(Player player) {
 		Vec3 playerPos = player.position();
-		double halfWidth = player.getBbWidth() * 0.5;
+		double halfWidth = player.getBbWidth() / 2;
 		double height = player.getBbHeight();
 
 		// 构造脚部和头部的检测箱

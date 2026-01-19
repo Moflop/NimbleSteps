@@ -3,8 +3,7 @@ package mod.arcomit.nimblesteps.event.skills;
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.ServerConfig;
 import mod.arcomit.nimblesteps.attachment.NimbleStepsState;
-import mod.arcomit.nimblesteps.init.NsAttachmentTypes;
-import mod.arcomit.nimblesteps.network.serverbound.jump.SupportWallJumpPacket;
+import mod.arcomit.nimblesteps.network.serverbound.jump.ServerboundSupportWallJumpPacket;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -25,45 +24,57 @@ import net.neoforged.neoforge.network.PacketDistributor;
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class SupportWallJumpHandler {
 
-	private static final double SUPPORT_WALL_JUMP_HORIZONTAL_SPEED = 0.2;
-	private static final double SUPPORT_WALL_JUMP_VERTICAL_SPEED = 0.6;
+	private static final double SUPPORT_WALL_JUMP_HORIZONTAL_SPEED = 0.2; // 撑墙跳水平速度
+	private static final double SUPPORT_WALL_JUMP_VERTICAL_SPEED = 0.6; // 撑墙跳垂直速度
 
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public static void handleShallowSwimming(PlayerTickEvent.Post event) {
-		Player player = event.getEntity();
-		if (!(player instanceof LocalPlayer localPlayer)) return;
-		if (!localPlayer.input.jumping) return;
-		if (!canSupportWallJump(localPlayer)) return;
-		useSupportWallJump(player);
-		PacketDistributor.sendToServer(new SupportWallJumpPacket());
+	public static void trySupportWallJump(PlayerTickEvent.Post event) {
+		if (!(event.getEntity() instanceof LocalPlayer localPlayer)) {
+			return;
+		}
+		NimbleStepsState state = NimbleStepsState.getNimbleState(localPlayer);
+
+		boolean jumpNoPressed = !localPlayer.input.jumping;
+		if (jumpNoPressed) {
+			return;
+		}
+
+		if (!canSupportWallJump(localPlayer, state)) {
+			return;
+		}
+
+		useSupportWallJump(localPlayer, state);
+		PacketDistributor.sendToServer(new ServerboundSupportWallJumpPacket());
 	}
 
-	public static void useSupportWallJump(Player player) {
-		NimbleStepsState state = player.getData(NsAttachmentTypes.NIMBLE_STEPS_STATE);
-		state.setArmHanging(false);
-		state.setArmHangingDirection(-1);
+	public static void useSupportWallJump(Player player, NimbleStepsState state) {
+		ArmhangHandler.endArmhang(state);
+		// 如果配置允许，重置爬墙状态
 		if (ServerConfig.supportWallJumpResetWallClimb) {
 			state.setHasWallClimbed(false);
 		}
-		// 重置距离上移除跳跃的时间
-		state.setTicksSinceLastJump(0);
 
 		Vec3 look = player.getLookAngle();
 		Vec3 jumpDir = new Vec3(look.x, 0, look.z).normalize();
+		player.setDeltaMovement(
+			jumpDir.scale(SUPPORT_WALL_JUMP_HORIZONTAL_SPEED).add(0, SUPPORT_WALL_JUMP_VERTICAL_SPEED, 0));
+		// 重置距离上移除跳跃的时间
+		state.setTicksSinceLastJump(0);
 
-
-		player.setDeltaMovement(jumpDir.scale(SUPPORT_WALL_JUMP_HORIZONTAL_SPEED).add(0, SUPPORT_WALL_JUMP_VERTICAL_SPEED, 0));
 		player.resetFallDistance();
 	}
 
-	public static boolean canSupportWallJump(Player player) {
-		NimbleStepsState state = player.getData(NsAttachmentTypes.NIMBLE_STEPS_STATE);
-		if (!state.isArmHanging() || !ServerConfig.enableSupportWallJump) return false;
-
+	private static boolean isFacingArmHangingDirection(Player player, NimbleStepsState state) {
 		Direction clingDir = Direction.from3DDataValue(state.getArmHangingDirection());
 		Direction facing = player.getDirection();
 		return clingDir == facing;
+	}
+
+	public static boolean canSupportWallJump(Player player, NimbleStepsState state) {
+		return ServerConfig.enableSupportWallJump
+			&& state.isArmHanging()
+			&& isFacingArmHangingDirection(player, state);
 	}
 
 }

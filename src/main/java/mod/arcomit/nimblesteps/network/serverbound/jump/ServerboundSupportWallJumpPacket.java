@@ -2,6 +2,7 @@ package mod.arcomit.nimblesteps.network.serverbound.jump;
 
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.nimblesteps.NimbleStepsMod;
+import mod.arcomit.nimblesteps.attachment.NimbleStepsState;
 import mod.arcomit.nimblesteps.event.skills.SupportWallJumpHandler;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -15,19 +16,20 @@ import org.jetbrains.annotations.NotNull;
  * @author Arcomit
  * @since 2026-01-02
  */
-public class SupportWallJumpPacket implements CustomPacketPayload {
-	public static final CustomPacketPayload.Type<SupportWallJumpPacket> TYPE = new CustomPacketPayload.Type<>(NimbleStepsMod.prefix("support_wall_jump"));
-	public static final StreamCodec<ByteBuf, SupportWallJumpPacket> STREAM_CODEC = StreamCodec.unit(new SupportWallJumpPacket());
+public class ServerboundSupportWallJumpPacket implements CustomPacketPayload {
+	public static final CustomPacketPayload.Type<ServerboundSupportWallJumpPacket> TYPE = new CustomPacketPayload.Type<>(NimbleStepsMod.prefix("support_wall_jump"));
+	public static final StreamCodec<ByteBuf, ServerboundSupportWallJumpPacket> STREAM_CODEC = StreamCodec.unit(new ServerboundSupportWallJumpPacket());
 
 	@Override
 	public @NotNull Type<? extends CustomPacketPayload> type() {
 		return TYPE;
 	}
 
-	public static void handle(SupportWallJumpPacket packet, IPayloadContext context) {
+	public static void handle(ServerboundSupportWallJumpPacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
-				SupportWallJumpHandler.useSupportWallJump(player);
+				NimbleStepsState state = NimbleStepsState.getNimbleState(player);
+				SupportWallJumpHandler.useSupportWallJump(player, state);
 				if (player.connection != null) {
 					player.connection.resetPosition();
 				}
@@ -37,7 +39,7 @@ public class SupportWallJumpPacket implements CustomPacketPayload {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof SupportWallJumpPacket;
+		return obj instanceof ServerboundSupportWallJumpPacket;
 	}
 
 	@Override

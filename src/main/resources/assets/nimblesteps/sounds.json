@@ -11,12 +11,12 @@
       "nimblesteps:landing_roll"
     ]
   },
-  "jump": {
-    "subtitle": "nimblesteps.subtitle.jump",
+  "wall_jump": {
+    "subtitle": "nimblesteps.subtitle.wall_jump",
     "sounds": [
-      "nimblesteps:jump_1",
-      "nimblesteps:jump_2",
-      "nimblesteps:jump_3"
+      "nimblesteps:wall_jump_1",
+      "nimblesteps:wall_jump_2",
+      "nimblesteps:wall_jump_3"
     ]
   }
 }

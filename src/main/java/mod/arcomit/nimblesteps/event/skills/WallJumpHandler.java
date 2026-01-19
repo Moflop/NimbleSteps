@@ -38,17 +38,15 @@ import org.jetbrains.annotations.NotNull;
 @EventBusSubscriber(modid = NimbleStepsMod.MODID)
 public class WallJumpHandler {
 
-	private static final double WALL_JUMP_HORIZONTAL_SPEED = 0.7;
-	private static final double WALL_JUMP_VERTICAL_SPEED = 0.4;
+	private static final double WALL_JUMP_HORIZONTAL_SPEED = 0.7; // 墙跳水平速度
+	private static final double WALL_JUMP_VERTICAL_SPEED = 0.4; // 墙跳垂直速度
 
-	// 碰撞检测参数
-	private static final double FEET_BOX_MAX_HEIGHT_RATIO = 0.3;
-	private static final double HEAD_BOX_MIN_HEIGHT_RATIO = 0.85;
-	private static final double COLLISION_CHECK_DISTANCE = 0.15;
+	private static final double HEAD_BOX_MIN_HEIGHT_RATIO = 0.85; // 头部检测箱最小高度比例
+	private static final double FEET_BOX_MAX_HEIGHT_RATIO = 0.3; // 脚部检测箱最大高度比例
+	private static final double COLLISION_CHECK_DISTANCE = 0.15; // 墙面碰撞检测距离
 
-	// 音效参数
-	private static final float JUMP_SOUND_VOLUME = 1.5f;
-	private static final float JUMP_SOUND_PITCH = 1.0f;
+	private static final float WALL_JUMP_SOUND_VOLUME = 1.5f;
+	private static final float WALL_JUMP_SOUND_PITCH = 1.0f;
 
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
@@ -123,13 +121,16 @@ public class WallJumpHandler {
 				player.getX(),
 				player.getY(),
 				player.getZ(),
-				NsSounds.JUMP.get(),
+				NsSounds.WALL_JUMP.get(),
 				SoundSource.PLAYERS,
-				JUMP_SOUND_VOLUME,
-				JUMP_SOUND_PITCH);
+			WALL_JUMP_SOUND_VOLUME,
+			WALL_JUMP_SOUND_PITCH);
 
 		player.setDeltaMovement(
 			jumpDir.scale(WALL_JUMP_HORIZONTAL_SPEED).add(0, WALL_JUMP_VERTICAL_SPEED, 0));
+
+		// 重置距离上移除跳跃的时间
+		state.setTicksSinceLastJump(0);
 		player.resetFallDistance();
 	}
 
@@ -168,19 +169,16 @@ public class WallJumpHandler {
 	}
 
 	/**
-	 * 重置与墙跳相关的计时器和状态标记。
+	 * 重置状态结束滑墙。
 	 */
 	private static void resetMovementStates(NimbleStepsState state) {
 		if (ServerConfig.wallJumpResetWallRun) {
-			state.setWallRunDuration(0);
 			state.setWallRunCount(0);
 		}
 		if (ServerConfig.wallJumpResetWallClimb) {
 			state.setHasWallClimbed(false);
 		}
-		state.setWallSliding(false);
-		state.setWallSlideJumpReleaseGraceTicks(0);
-		state.setTicksSinceLastJump(0);
+		WallSlideHandler.endWallSliding(state);
 	}
 
 	/**
@@ -280,7 +278,7 @@ public class WallJumpHandler {
 
 	private static @NotNull List<AABB> getPlayerAabbs(Player player) {
 		Vec3 playerPos = player.position();
-		double halfWidth = player.getBbWidth() * 0.5;
+		double halfWidth = player.getBbWidth() / 2;
 		double height = player.getBbHeight();
 
 		// 构建检测箱：脚部和头部

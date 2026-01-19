@@ -1,7 +1,7 @@
 package mod.arcomit.nimblesteps.network.clientbound;
 
 import mod.arcomit.nimblesteps.NimbleStepsMod;
-import mod.arcomit.nimblesteps.event.skills.refactoring.CrawlHandler;
+import mod.arcomit.nimblesteps.event.skills.CrawlHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;

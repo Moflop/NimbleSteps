@@ -3,7 +3,7 @@ package mod.arcomit.nimblesteps.network.serverbound.wallrun;
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.nimblesteps.NimbleStepsMod;
 import mod.arcomit.nimblesteps.attachment.NimbleStepsState;
-import mod.arcomit.nimblesteps.event.skills.refactoring.WallRunHandler;
+import mod.arcomit.nimblesteps.event.skills.WallRunHandler;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;

@@ -43,7 +43,6 @@ public class NimbleStepsState implements INBTSerializable<CompoundTag> {
 
 			buf.writeBoolean(attachment.isArmHanging);
 			buf.writeInt(attachment.armHangingDirection);
-			buf.writeDouble(attachment.armHangingY);
 
 			buf.writeInt(attachment.wallClimbDuration);
 			buf.writeBoolean(attachment.hasWallClimbed);
@@ -72,7 +71,6 @@ public class NimbleStepsState implements INBTSerializable<CompoundTag> {
 
 			attachment.isArmHanging = buf.readBoolean();
 			attachment.armHangingDirection = buf.readInt();
-			attachment.armHangingY = buf.readDouble();
 
 			attachment.wallClimbDuration = buf.readInt();
 			attachment.hasWallClimbed = buf.readBoolean();
@@ -133,7 +131,6 @@ public class NimbleStepsState implements INBTSerializable<CompoundTag> {
 	public void resetArmHangingDirection() {
 		this.armHangingDirection = -1;
 	}
-	private double armHangingY;
 	/**
 	 * 爬墙
 	 */
@@ -161,7 +158,6 @@ public class NimbleStepsState implements INBTSerializable<CompoundTag> {
 		tag.putInt("ticksSinceLastJump", ticksSinceLastJump);
 		tag.putBoolean("isArmHanging", isArmHanging);
 		tag.putInt("armHangingDirection", armHangingDirection);
-		tag.putDouble("armHangingY", armHangingY);
 		tag.putInt("wallClimbDuration", wallClimbDuration);
 		tag.putBoolean("hasWallClimbed", hasWallClimbed);
 		return tag;
@@ -184,7 +180,6 @@ public class NimbleStepsState implements INBTSerializable<CompoundTag> {
 		ticksSinceLastJump = nbt.getInt("ticksSinceLastJump");
 		isArmHanging = nbt.getBoolean("isArmHanging");
 		armHangingDirection = nbt.getInt("armHangingDirection");
-		armHangingY = nbt.getDouble("armHangingY");
 		wallClimbDuration = nbt.getInt("wallClimbDuration");
 		hasWallClimbed = nbt.getBoolean("hasWallClimbed");
 	}
