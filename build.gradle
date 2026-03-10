@@ -103,6 +103,10 @@ dependencies {
 
     //implementation "curse.maven:tacz-1-21-1-1353462:7374584"
 
+    // 光影
+    runtimeOnly "curse.maven:sodium-394468:6382651"
+    runtimeOnly "curse.maven:irisshaders-455508:6661598"
+
     // 输入法冲突修复
     runtimeOnly "curse.maven:imblocker-483760:7310357"
     // 减少输入延迟

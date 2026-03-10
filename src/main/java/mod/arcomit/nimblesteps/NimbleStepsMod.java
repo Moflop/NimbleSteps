@@ -1,8 +1,8 @@
 package mod.arcomit.nimblesteps;
 
 import com.mojang.logging.LogUtils;
-import mod.arcomit.nimblesteps.init.NsAttachmentTypes;
-import mod.arcomit.nimblesteps.init.NsSounds;
+import mod.arcomit.nimblesteps.v1.init.NsAttachmentTypes;
+import mod.arcomit.nimblesteps.v1.init.NsSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;

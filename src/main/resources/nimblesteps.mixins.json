@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "mod.arcomit.nimblesteps.mixin",
+  "package": "mod.arcomit.nimblesteps.v2.content.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "LivingEntityMixin",
