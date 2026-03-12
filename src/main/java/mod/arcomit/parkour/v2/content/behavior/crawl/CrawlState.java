@@ -1,0 +1,54 @@
+package mod.arcomit.parkour.v2.content.behavior.crawl;
+
+import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.content.behavior.base.DefaultState;
+import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
+import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
+
+import java.util.List;
+
+/**
+ * 爬行状态。
+ *
+ * @author Arcomit
+ * @since 2026-03-09
+ */
+public class CrawlState implements IParkourState {
+
+	public static final CrawlState INSTANCE = new CrawlState();
+
+	@Override
+	public Iterable<IParkourStateTransition> transitions() {
+		return List.of(
+			new IParkourStateTransition() {
+				@Override
+				public IParkourState targetState() {
+					return DefaultState.INSTANCE;
+				}
+
+				@Override
+				public boolean canTrigger(Player player) {
+					MovementStateContext context = MovementStateContext.get(player);
+					return !context.getGroundData().isCrawling() || !CrawlLogic.isValid(player);
+				}
+			}
+		);
+	}
+
+	@Override
+	public void onEnter(Player player, IParkourState previousState) {
+		player.setForcedPose(Pose.SWIMMING);
+	}
+
+	@Override
+	public void onExit(Player player, IParkourStateTransition triggeredTransition) {
+		MovementStateContext.get(player).getGroundData().setCrawling(false);
+		player.setForcedPose(null);
+	}
+
+	@Override
+	public void onTick(Player player) {}
+
+}
