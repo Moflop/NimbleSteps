@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v1.network.clientbound;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -40,7 +40,7 @@ public record ClientboundUpdateCrawlStatePacket(int entityId, boolean crawlState
 				Entity entity = level.getEntity(packet.entityId());
 				if (entity instanceof Player player) {
 					// 客户端收到服务端的同步，只需覆写上下文，本地状态机自然会纠正
-					MovementStateContext.get(player).getGroundData().setCrawling(packet.crawlState());
+					ParkourContext.get(player).groundData().setCrawling(packet.crawlState());
 				}
 			}
 		});

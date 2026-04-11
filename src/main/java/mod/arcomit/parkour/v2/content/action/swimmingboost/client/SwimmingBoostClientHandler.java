@@ -5,8 +5,8 @@ import mod.arcomit.parkour.v1.network.serverbound.swimmingboost.ServerboundUseSw
 import mod.arcomit.parkour.v2.content.client.NsKeyBindings;
 import mod.arcomit.parkour.v2.content.client.NsKeyMapping;
 import mod.arcomit.parkour.v2.content.client.event.InputJustPressedEvent;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
-import mod.arcomit.parkour.v2.core.context.SwimMovementData;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
+import mod.arcomit.parkour.v2.core.context.SwimData;
 import mod.arcomit.parkour.v2.content.action.swimmingboost.SwimmingBoostLogic;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -38,7 +38,7 @@ public class SwimmingBoostClientHandler {
 			return;
 		}
 
-		SwimMovementData swimData = MovementStateContext.get(player).getSwimData();
+		SwimData swimData = ParkourContext.get(player).swimData();
 
 		// 调用逻辑层的判断条件
 		if (!SwimmingBoostLogic.canSwimmingBoost(player, swimData)) {

@@ -1,9 +1,9 @@
 package mod.arcomit.parkour.v2.content.behavior.roll;
 
 import mod.arcomit.parkour.ServerConfig;
-import mod.arcomit.parkour.v1.init.NsSounds;
+import mod.arcomit.parkour.v2.content.init.PkSounds;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
-import mod.arcomit.parkour.v2.core.context.GroundMovementData;
+import mod.arcomit.parkour.v2.core.context.GroundData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
 import net.minecraft.sounds.SoundSource;
@@ -24,7 +24,7 @@ public class LandingRollLogic {
 	private static final float ROLL_SOUND_VOLUME = 1.0f;
 	private static final float ROLL_SOUND_PITCH = 1.0f;
 
-	public static void performLandingRoll(Player player, GroundMovementData groundData, LivingFallEvent event) {
+	public static void performLandingRoll(Player player, GroundData groundData, LivingFallEvent event) {
 		event.setDamageMultiplier(0);
 		event.setCanceled(true);
 		groundData.setLandingRollDuration(LANDING_ROLL_DURATION); // 这里后续可以对接状态机
@@ -33,18 +33,18 @@ public class LandingRollLogic {
 		if (level.isClientSide) {
 			Minecraft.getInstance().getSoundManager().play(
 				new EntityBoundSoundInstance(
-					NsSounds.LANDING_ROLL.get(), SoundSource.PLAYERS,
+					PkSounds.LANDING_ROLL.get(), SoundSource.PLAYERS,
 					ROLL_SOUND_VOLUME, ROLL_SOUND_PITCH, player, player.getRandom().nextLong()));
 		} else {
 			level.playSound(
 				null, player.getX(), player.getY(), player.getZ(),
-				NsSounds.LANDING_ROLL.get(), SoundSource.PLAYERS,
+				PkSounds.LANDING_ROLL.get(), SoundSource.PLAYERS,
 				ROLL_SOUND_VOLUME, ROLL_SOUND_PITCH);
 			player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0));
 		}
 	}
 
-	public static boolean cannotSetLandingRollWindow(Player player, GroundMovementData groundData) {
+	public static boolean cannotSetLandingRollWindow(Player player, GroundData groundData) {
 		if (!PlayerStateUtils.fallWillTakeDamage(player)) {
 			return true;
 		}

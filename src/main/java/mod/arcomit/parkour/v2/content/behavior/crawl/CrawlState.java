@@ -1,54 +1,47 @@
 package mod.arcomit.parkour.v2.content.behavior.crawl;
 
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
-import mod.arcomit.parkour.v2.content.behavior.base.DefaultState;
+import mod.arcomit.parkour.ServerConfig;
+import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
+import mod.arcomit.parkour.v2.content.client.NsKeyBindings;
+import mod.arcomit.parkour.v2.content.client.NsKeyMapping;
+import mod.arcomit.parkour.v2.content.init.PkParkourStates;
+import mod.arcomit.parkour.v2.core.statemachine.state.AbstractParkourState;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
 
 /**
- * 爬行状态。
+ * 爬行状态
  *
  * @author Arcomit
- * @since 2026-03-09
+ * @since 2026-03-20
  */
-public class CrawlState implements IParkourState {
+public class CrawlState extends AbstractParkourState {
 
-	public static final CrawlState INSTANCE = new CrawlState();
+	public CrawlState() {
+		registerTransitions(
+			// 环境不再支持爬行时，退回默认状态
+			IParkourStateTransition.onTick(PkParkourStates.DEFAULT::get, player -> !this.isValid(player)),
 
-	@Override
-	public Iterable<IParkourStateTransition> transitions() {
-		return List.of(
-			new IParkourStateTransition() {
-				@Override
-				public IParkourState targetState() {
-					return DefaultState.INSTANCE;
-				}
-
-				@Override
-				public boolean canTrigger(Player player) {
-					MovementStateContext context = MovementStateContext.get(player);
-					return !context.getGroundData().isCrawling() || !CrawlLogic.isValid(player);
-				}
-			}
+			// 玩家按下取消键（滑铲键）时，退回默认状态
+			IParkourStateTransition.onInput(PkParkourStates.DEFAULT::get, NsKeyBindings.SLIDE_KEY)
 		);
 	}
 
 	@Override
-	public void onEnter(Player player, IParkourState previousState) {
-		player.setForcedPose(Pose.SWIMMING);
+	public Pose getLinkedPose() {
+		return Pose.SWIMMING;
 	}
 
 	@Override
-	public void onExit(Player player, IParkourStateTransition triggeredTransition) {
-		MovementStateContext.get(player).getGroundData().setCrawling(false);
-		player.setForcedPose(null);
+	public boolean isValid(Player player) {
+		return ServerConfig.enableCrawl
+			&& !PlayerStateUtils.fallWillTakeDamage(player)
+			&& !player.isSwimming()
+			&& PlayerStateUtils.isAbleToAction(player);
 	}
-
-	@Override
-	public void onTick(Player player) {}
-
 }

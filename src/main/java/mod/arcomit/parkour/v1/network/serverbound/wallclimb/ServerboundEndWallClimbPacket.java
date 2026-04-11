@@ -2,9 +2,9 @@ package mod.arcomit.parkour.v1.network.serverbound.wallclimb;
 
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 //import mod.arcomit.nimblesteps.event.skills.WallClimbHandler;
-import mod.arcomit.parkour.v1.init.NsAttachmentTypes;
+import mod.arcomit.parkour.v2.content.init.PkAttachmentTypes;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,7 +28,7 @@ public class ServerboundEndWallClimbPacket implements CustomPacketPayload {
 	public static void handle(ServerboundEndWallClimbPacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
-				MovementStateContext state = player.getData(NsAttachmentTypes.MOVEMENT_STATE_CONTEXT);
+				ParkourContext state = player.getData(PkAttachmentTypes.PARKOUR_CONTEXT);
 //				WallClimbHandler.endWallClimb(state);
 			}
 		});

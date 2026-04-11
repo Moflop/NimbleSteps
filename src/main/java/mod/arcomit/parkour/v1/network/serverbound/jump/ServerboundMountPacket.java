@@ -2,7 +2,7 @@ package mod.arcomit.parkour.v1.network.serverbound.jump;
 
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 //import mod.arcomit.nimblesteps.event.skills.MountHandler;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -28,7 +28,7 @@ public class ServerboundMountPacket implements CustomPacketPayload {
 	public static void handle(ServerboundMountPacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
-				MovementStateContext state = MovementStateContext.get(player);
+				ParkourContext state = ParkourContext.get(player);
 //				if (!MountHandler.canStartMount(player, state)) {
 //					return;
 //				}

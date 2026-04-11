@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.content.mixin;
 
 import mod.arcomit.parkour.ServerConfig;
-import mod.arcomit.parkour.v1.init.NsTags;
+import mod.arcomit.parkour.v2.content.init.PkTags;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -80,7 +80,7 @@ public abstract class LivingEntityMixin extends Entity {
 	@Unique
 	private boolean isClimbablePole(Level world, BlockPos blockPos) {
 		BlockState blockState = world.getBlockState(blockPos);
-		if (!blockState.is(NsTags.Blocks.CLIMBABLE)) {
+		if (!blockState.is(PkTags.Blocks.CLIMBABLE)) {
 			return false;
 		}
 		Block block = blockState.getBlock();

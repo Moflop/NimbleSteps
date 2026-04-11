@@ -1,4 +1,4 @@
-package mod.arcomit.parkour.v1.init;
+package mod.arcomit.parkour.v2.content.init;
 
 import mod.arcomit.parkour.ParkourMod;
 import net.minecraft.core.registries.Registries;
@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.Block;
  * @author Mitok
  * @since 2026-01-04
  */
-public class NsTags {
+public class PkTags {
 	public static class Blocks
 	{
 		public static final TagKey<Block> CLIMBABLE = createBlockTag("climbable");

@@ -16,6 +16,7 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 @OnlyIn(Dist.CLIENT)
 public class NsKeyMapping extends KeyMapping {
+	private int pressedTicks;
 
 	public NsKeyMapping(String name, InputConstants.Type inputType, int keyCode, String category) {
 		super(name, inputType, keyCode, category);
@@ -24,12 +25,16 @@ public class NsKeyMapping extends KeyMapping {
 	@Override
 	public void setDown(boolean value) {
 		if (this.isDown() == value) {
+			if (this.isDown()) {
+				pressedTicks++;
+			}
 			return;
 		}
 		if (value) {
 			NeoForge.EVENT_BUS.post(new InputJustPressedEvent(this));
 		} else {
-			NeoForge.EVENT_BUS.post(new InputReleasedEvent(this));
+			NeoForge.EVENT_BUS.post(new InputReleasedEvent(this, pressedTicks));
+			pressedTicks = 0;
 		}
 		super.setDown(value);
 	}

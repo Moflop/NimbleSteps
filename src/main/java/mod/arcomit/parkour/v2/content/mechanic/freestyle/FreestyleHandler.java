@@ -2,7 +2,7 @@ package mod.arcomit.parkour.v2.content.mechanic.freestyle;
 
 import mod.arcomit.parkour.ServerConfig;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -22,7 +22,7 @@ public class FreestyleHandler {
 	@SubscribeEvent
 	public static void tryFreestyleSwimming(PlayerTickEvent.Post event) {
 		Player player = event.getEntity();
-		MovementStateContext state = MovementStateContext.get(player);
+		ParkourContext state = ParkourContext.get(player);
 		if (!canFreestyle(player, state)) {
 			return;
 		}
@@ -36,7 +36,7 @@ public class FreestyleHandler {
 		player.setDeltaMovement(motion.x, 0, motion.z);
 	}
 
-	public static boolean canFreestyle(Player player, MovementStateContext state) {
+	public static boolean canFreestyle(Player player, ParkourContext state) {
 		return ServerConfig.enableFreestyle
 			&& player.isSwimming()
 			&& !player.isUnderWater()

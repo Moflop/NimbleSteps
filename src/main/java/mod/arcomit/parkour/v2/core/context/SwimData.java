@@ -19,21 +19,21 @@ import net.minecraft.network.codec.StreamCodec;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SwimMovementData {
+public class SwimData {
 	private int swimmingBoostCooldown = 0;
 
-	public static final Codec<SwimMovementData> CODEC = RecordCodecBuilder.create(instance ->
+	public static final Codec<SwimData> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(
-			Codec.INT.optionalFieldOf("swimmingBoostCooldown", 0).forGetter(SwimMovementData::getSwimmingBoostCooldown)
-		).apply(instance, SwimMovementData::new)
+			Codec.INT.optionalFieldOf("swimmingBoostCooldown", 0).forGetter(SwimData::getSwimmingBoostCooldown)
+		).apply(instance, SwimData::new)
 	);
 
-	public static final StreamCodec<ByteBuf, SwimMovementData> STREAM_CODEC = StreamCodec.composite(
-		ByteBufCodecs.VAR_INT, SwimMovementData::getSwimmingBoostCooldown,
-		SwimMovementData::new
+	public static final StreamCodec<ByteBuf, SwimData> STREAM_CODEC = StreamCodec.composite(
+		ByteBufCodecs.VAR_INT, SwimData::getSwimmingBoostCooldown,
+		SwimData::new
 	);
 
-	public void copyFrom(SwimMovementData other) {
+	public void copyFrom(SwimData other) {
 		this.swimmingBoostCooldown = other.swimmingBoostCooldown;
 	}
 }

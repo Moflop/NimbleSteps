@@ -19,7 +19,7 @@ import net.minecraft.network.codec.StreamCodec;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class JumpMovementData {
+public class JumpData {
 	// 去掉 has 前缀
 	private boolean jumped = false;
 	private int lastWallJumpDirection = -1;
@@ -29,23 +29,23 @@ public class JumpMovementData {
 		this.lastWallJumpDirection = -1;
 	}
 
-	public static final Codec<JumpMovementData> CODEC = RecordCodecBuilder.create(instance ->
+	public static final Codec<JumpData> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(
 			// 序列化的键名保持 "hasJumped" 不变
-			Codec.BOOL.optionalFieldOf("hasJumped", false).forGetter(JumpMovementData::isJumped),
-			Codec.INT.optionalFieldOf("lastWallJumpDirection", -1).forGetter(JumpMovementData::getLastWallJumpDirection),
-			Codec.INT.optionalFieldOf("ticksSinceLastJump", 100).forGetter(JumpMovementData::getTicksSinceLastJump)
-		).apply(instance, JumpMovementData::new)
+			Codec.BOOL.optionalFieldOf("hasJumped", false).forGetter(JumpData::isJumped),
+			Codec.INT.optionalFieldOf("lastWallJumpDirection", -1).forGetter(JumpData::getLastWallJumpDirection),
+			Codec.INT.optionalFieldOf("ticksSinceLastJump", 100).forGetter(JumpData::getTicksSinceLastJump)
+		).apply(instance, JumpData::new)
 	);
 
-	public static final StreamCodec<ByteBuf, JumpMovementData> STREAM_CODEC = StreamCodec.composite(
-		ByteBufCodecs.BOOL, JumpMovementData::isJumped,
-		ByteBufCodecs.VAR_INT, JumpMovementData::getLastWallJumpDirection,
-		ByteBufCodecs.VAR_INT, JumpMovementData::getTicksSinceLastJump,
-		JumpMovementData::new
+	public static final StreamCodec<ByteBuf, JumpData> STREAM_CODEC = StreamCodec.composite(
+		ByteBufCodecs.BOOL, JumpData::isJumped,
+		ByteBufCodecs.VAR_INT, JumpData::getLastWallJumpDirection,
+		ByteBufCodecs.VAR_INT, JumpData::getTicksSinceLastJump,
+		JumpData::new
 	);
 
-	public void copyFrom(JumpMovementData other) {
+	public void copyFrom(JumpData other) {
 		this.jumped = other.jumped;
 		this.lastWallJumpDirection = other.lastWallJumpDirection;
 		this.ticksSinceLastJump = other.ticksSinceLastJump;

@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.data;
 
-import mod.arcomit.parkour.v1.init.NsTags;
+import mod.arcomit.parkour.v2.content.init.PkTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
@@ -30,11 +30,11 @@ public class NsBlockTagsProvider extends BlockTagsProvider {
 			.filter(block -> isCrossCollisionBlock(block)
 				|| isNotFullRotatedPillarBlock(block)
 				|| isEndRodBlock(block))
-			.forEach(this.tag(NsTags.Blocks.CLIMBABLE)::add);
-		this.tag(NsTags.Blocks.CLIMBABLE).addTag(BlockTags.FENCES);
-		this.tag(NsTags.Blocks.COMMON_IGNORED_BLOCKS).addTag(NsTags.Blocks.CLIMBABLE);
-		this.tag(NsTags.Blocks.COMMON_IGNORED_BLOCKS).addTag(BlockTags.CLIMBABLE);
-		this.tag(NsTags.Blocks.SCAFFOLDING_BLOCKS).add(Blocks.SCAFFOLDING);
+			.forEach(this.tag(PkTags.Blocks.CLIMBABLE)::add);
+		this.tag(PkTags.Blocks.CLIMBABLE).addTag(BlockTags.FENCES);
+		this.tag(PkTags.Blocks.COMMON_IGNORED_BLOCKS).addTag(PkTags.Blocks.CLIMBABLE);
+		this.tag(PkTags.Blocks.COMMON_IGNORED_BLOCKS).addTag(BlockTags.CLIMBABLE);
+		this.tag(PkTags.Blocks.SCAFFOLDING_BLOCKS).add(Blocks.SCAFFOLDING);
 	}
 
 	private static boolean isCrossCollisionBlock(Block block) {

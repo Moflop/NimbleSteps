@@ -2,10 +2,10 @@ package mod.arcomit.parkour.v1.network.serverbound.slide;
 
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.GroundMovementData;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.GroundData;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 //import mod.arcomit.nimblesteps.event.skills.SlideHandler;
-import mod.arcomit.parkour.v2.content.behavior.slide.SlideLogic;
+//import mod.arcomit.parkour.v2.content.behavior.slide.SlideLogic;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,13 +35,13 @@ public record ServerboundUseSlidePacket(float forwardImpulse, float leftImpulse)
 	public static void handle(ServerboundUseSlidePacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
-				MovementStateContext stateContext = MovementStateContext.get(player);
-				GroundMovementData groundData = stateContext.getGroundData();
-				if (SlideLogic.cannotStartSlide(player, groundData)) {
-					return;
-				}
-
-				SlideLogic.performSlide(player, groundData, packet.forwardImpulse, packet.leftImpulse);
+				ParkourContext stateContext = ParkourContext.get(player);
+				GroundData groundData = stateContext.groundData();
+//				if (SlideLogic.cannotStartSlide(player, groundData)) {
+//					return;
+//				}
+//
+//				SlideLogic.performSlide(player, groundData, packet.forwardImpulse, packet.leftImpulse);
 				// 避免触发服务端反作弊回拉
 				if (player.connection != null) {
 					player.connection.resetPosition();

@@ -1,9 +1,10 @@
-package mod.arcomit.parkour.v2.content.behavior.roll;
+package mod.arcomit.parkour.v2.content.behavior.roll.common;
 
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
-import mod.arcomit.parkour.v2.core.context.GroundMovementData;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.content.behavior.roll.LandingRollLogic;
+import mod.arcomit.parkour.v2.core.context.GroundData;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -23,7 +24,7 @@ public class LandingRollHandler {
 		if (!(event.getEntity() instanceof Player player)) return;
 		if (!PlayerStateUtils.fallWillTakeDamage(player)) return;
 
-		GroundMovementData groundData = MovementStateContext.get(player).getGroundData();
+		GroundData groundData = ParkourContext.get(player).groundData();
 		if (groundData.getLandingRollWindow() <= 0) return;
 
 		// 条件满足，调用逻辑层

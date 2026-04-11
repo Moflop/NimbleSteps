@@ -21,7 +21,7 @@ import org.lwjgl.glfw.GLFW;
 public class NsKeyBindings {
 	private static final String CATEGORY = "key.categories." + ParkourMod.MODID;
 
-	public static final KeyMapping SLIDE_KEY = new NsKeyMapping(
+	public static final NsKeyMapping SLIDE_KEY = new NsKeyMapping(
 		"key." + ParkourMod.MODID + ".roll_slide",
 		InputConstants.Type.KEYSYM,
 		GLFW.GLFW_KEY_V,

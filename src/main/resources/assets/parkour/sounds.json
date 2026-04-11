@@ -1,22 +1,22 @@
 {
   "slide": {
-    "subtitle": "nimblesteps.subtitle.slide",
+    "subtitle": "parkour.subtitle.slide",
     "sounds": [
-      "nimblesteps:slide"
+      "parkour:slide"
     ]
   },
   "landing_roll": {
-    "subtitle": "nimblesteps.subtitle.landing_roll",
+    "subtitle": "parkour.subtitle.landing_roll",
     "sounds": [
-      "nimblesteps:landing_roll"
+      "parkour:landing_roll"
     ]
   },
   "wall_jump": {
-    "subtitle": "nimblesteps.subtitle.wall_jump",
+    "subtitle": "parkour.subtitle.wall_jump",
     "sounds": [
-      "nimblesteps:wall_jump_1",
-      "nimblesteps:wall_jump_2",
-      "nimblesteps:wall_jump_3"
+      "parkour:wall_jump_1",
+      "parkour:wall_jump_2",
+      "parkour:wall_jump_3"
     ]
   }
 }

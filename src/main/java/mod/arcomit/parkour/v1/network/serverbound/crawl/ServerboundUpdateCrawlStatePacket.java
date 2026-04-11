@@ -2,9 +2,8 @@ package mod.arcomit.parkour.v1.network.serverbound.crawl;
 
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v1.network.clientbound.ClientboundUpdateCrawlStatePacket;
-import mod.arcomit.parkour.v2.core.context.GroundMovementData;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
-import mod.arcomit.parkour.v2.content.behavior.crawl.CrawlLogic;
+import mod.arcomit.parkour.v2.core.context.GroundData;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.statemachine.ParkourStateMachine;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -34,19 +33,19 @@ public record ServerboundUpdateCrawlStatePacket(boolean shouldCrawl) implements 
 	public static void handle(ServerboundUpdateCrawlStatePacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (!(context.player() instanceof ServerPlayer player)) return;
-			GroundMovementData groundData = MovementStateContext.get(player).getGroundData();
-			ParkourStateMachine stateMachine = ParkourStateMachine.get(player);
-			boolean shouldCrawl = packet.shouldCrawl();
-
-			if (!shouldCrawl || CrawlLogic.isValid(player)) {
-				// 服务端批准，修改上下文
-				groundData.setCrawling(shouldCrawl);
-			} else {
-				// 非法请求，驳回并在上下文里写 false
-				groundData.setCrawling(false);
-				PacketDistributor.sendToPlayersTrackingEntityAndSelf(
-					player, new ClientboundUpdateCrawlStatePacket(player.getId(), false));
-			}
+			GroundData groundData = ParkourContext.get(player).groundData();
+//			ParkourStateMachine stateMachine = ParkourStateMachine.get(player);
+//			boolean shouldCrawl = packet.shouldCrawl();
+//
+//			if (!shouldCrawl || CrawlLogic.isValid(player)) {
+//				// 服务端批准，修改上下文
+//				groundData.setCrawling(shouldCrawl);
+//			} else {
+//				// 非法请求，驳回并在上下文里写 false
+//				groundData.setCrawling(false);
+//				PacketDistributor.sendToPlayersTrackingEntityAndSelf(
+//					player, new ClientboundUpdateCrawlStatePacket(player.getId(), false));
+//			}
 		});
 	}
 }

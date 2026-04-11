@@ -16,8 +16,10 @@ import net.neoforged.bus.api.Event;
 @Getter
 public class InputReleasedEvent extends Event {
 	private final NsKeyMapping keyMapping;
+	private final int pressedTicks;
 
-	public InputReleasedEvent(NsKeyMapping keyMapping) {
+	public InputReleasedEvent(NsKeyMapping keyMapping, int pressedTicks) {
 		this.keyMapping = keyMapping;
+		this.pressedTicks = pressedTicks;
 	}
 }

@@ -2,7 +2,7 @@ package mod.arcomit.parkour.v2.content.mechanic.shallowswim;
 
 import mod.arcomit.parkour.ServerConfig;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -23,7 +23,7 @@ public class ShallowSwimmingHandler {
 	@SubscribeEvent
 	public static void tryShallowSwimming(PlayerTickEvent.Post event) {
 		Player player = event.getEntity();
-		MovementStateContext state = MovementStateContext.get(player);
+		ParkourContext state = ParkourContext.get(player);
 		if (!canShallowSwim(player, state)) {
 			return;
 		}
@@ -54,7 +54,7 @@ public class ShallowSwimmingHandler {
 		player.setSwimming(player.isSprinting());
 	}
 
-	private static boolean canShallowSwim(Player player, MovementStateContext state) {
+	private static boolean canShallowSwim(Player player, ParkourContext state) {
 		return ServerConfig.enableShallowSwimming
 			&& player.isInWater()
 			&& PlayerStateUtils.isAbleToAction(player);

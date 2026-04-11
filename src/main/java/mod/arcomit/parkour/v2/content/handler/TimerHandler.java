@@ -1,9 +1,9 @@
 package mod.arcomit.parkour.v2.content.handler;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.GroundMovementData;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
-import mod.arcomit.parkour.v2.core.context.SwimMovementData;
+import mod.arcomit.parkour.v2.core.context.GroundData;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
+import mod.arcomit.parkour.v2.core.context.SwimData;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -21,9 +21,9 @@ public class TimerHandler {
 	@SubscribeEvent
 	public static void tickCooldownTimers(PlayerTickEvent.Post event) {
 		Player player = event.getEntity();
-		MovementStateContext context = MovementStateContext.get(player);
-		GroundMovementData groundData = context.getGroundData();
-		SwimMovementData swimData = context.getSwimData();
+		ParkourContext context = ParkourContext.get(player);
+		GroundData groundData = context.groundData();
+		SwimData swimData = context.swimData();
 
 		// 滑铲冷却
 		int slideCooldown = groundData.getSlideCooldown();

@@ -1,4 +1,4 @@
-package mod.arcomit.parkour.v1.init;
+package mod.arcomit.parkour.v2.content.init;
 
 import mod.arcomit.parkour.ParkourMod;
 import net.minecraft.core.registries.Registries;
@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  * @author Arcomit
  * @since 2026-01-05
  */
-public class NsSounds {
+public class PkSounds {
 	public static final DeferredRegister<SoundEvent> SOUNDS =
 		DeferredRegister.create(Registries.SOUND_EVENT, ParkourMod.MODID);
 

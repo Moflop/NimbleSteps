@@ -19,7 +19,7 @@ import net.minecraft.network.codec.StreamCodec;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class WallMovementData {
+public class WallData {
 	private int wallRunDuration = 0;
 	private int wallRunCount = 0;
 
@@ -45,23 +45,23 @@ public class WallMovementData {
 		this.armHangingDirection = -1;
 	}
 
-	public static final Codec<WallMovementData> CODEC = RecordCodecBuilder.create(instance ->
+	public static final Codec<WallData> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(
-			Codec.INT.optionalFieldOf("wallRunDuration", 0).forGetter(WallMovementData::getWallRunDuration),
-			Codec.INT.optionalFieldOf("wallRunCount", 0).forGetter(WallMovementData::getWallRunCount),
-			Codec.BOOL.optionalFieldOf("isWallSliding", false).forGetter(WallMovementData::isWallSliding),
-			Codec.INT.optionalFieldOf("wallSlideJumpReleaseGraceTicks", 0).forGetter(WallMovementData::getWallSlideJumpReleaseGraceTicks),
-			Codec.INT.optionalFieldOf("wallSlideDirection", -1).forGetter(WallMovementData::getWallSlideDirection),
-			Codec.BOOL.optionalFieldOf("isArmHanging", false).forGetter(WallMovementData::isArmHanging),
-			Codec.INT.optionalFieldOf("armHangingDirection", -1).forGetter(WallMovementData::getArmHangingDirection),
-			Codec.INT.optionalFieldOf("wallClimbDuration", 0).forGetter(WallMovementData::getWallClimbDuration),
-			Codec.BOOL.optionalFieldOf("hasWallClimbed", false).forGetter(WallMovementData::isWallClimbed),
-			Codec.INT.optionalFieldOf("mountDuration", 0).forGetter(WallMovementData::getMountDuration),
-			Codec.DOUBLE.optionalFieldOf("obstaclesHeight", 0.0).forGetter(WallMovementData::getObstaclesHeight)
-		).apply(instance, WallMovementData::new)
+			Codec.INT.optionalFieldOf("wallRunDuration", 0).forGetter(WallData::getWallRunDuration),
+			Codec.INT.optionalFieldOf("wallRunCount", 0).forGetter(WallData::getWallRunCount),
+			Codec.BOOL.optionalFieldOf("isWallSliding", false).forGetter(WallData::isWallSliding),
+			Codec.INT.optionalFieldOf("wallSlideJumpReleaseGraceTicks", 0).forGetter(WallData::getWallSlideJumpReleaseGraceTicks),
+			Codec.INT.optionalFieldOf("wallSlideDirection", -1).forGetter(WallData::getWallSlideDirection),
+			Codec.BOOL.optionalFieldOf("isArmHanging", false).forGetter(WallData::isArmHanging),
+			Codec.INT.optionalFieldOf("armHangingDirection", -1).forGetter(WallData::getArmHangingDirection),
+			Codec.INT.optionalFieldOf("wallClimbDuration", 0).forGetter(WallData::getWallClimbDuration),
+			Codec.BOOL.optionalFieldOf("hasWallClimbed", false).forGetter(WallData::isWallClimbed),
+			Codec.INT.optionalFieldOf("mountDuration", 0).forGetter(WallData::getMountDuration),
+			Codec.DOUBLE.optionalFieldOf("obstaclesHeight", 0.0).forGetter(WallData::getObstaclesHeight)
+		).apply(instance, WallData::new)
 	);
 
-	public static final StreamCodec<ByteBuf, WallMovementData> STREAM_CODEC = StreamCodec.of(
+	public static final StreamCodec<ByteBuf, WallData> STREAM_CODEC = StreamCodec.of(
 		(buf, data) -> {
 			ByteBufCodecs.VAR_INT.encode(buf, data.getWallRunDuration());
 			ByteBufCodecs.VAR_INT.encode(buf, data.getWallRunCount());
@@ -75,7 +75,7 @@ public class WallMovementData {
 			ByteBufCodecs.VAR_INT.encode(buf, data.getMountDuration());
 			ByteBufCodecs.DOUBLE.encode(buf, data.getObstaclesHeight());
 		},
-		buf -> new WallMovementData(
+		buf -> new WallData(
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.BOOL.decode(buf),
@@ -90,7 +90,7 @@ public class WallMovementData {
 		)
 	);
 
-	public void copyFrom(WallMovementData other) {
+	public void copyFrom(WallData other) {
 		this.wallRunDuration = other.wallRunDuration;
 		this.wallRunCount = other.wallRunCount;
 		this.wallSliding = other.wallSliding;

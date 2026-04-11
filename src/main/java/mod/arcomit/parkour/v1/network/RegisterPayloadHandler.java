@@ -18,6 +18,9 @@ import mod.arcomit.parkour.v1.network.serverbound.wallrun.ServerboundClampWallRu
 import mod.arcomit.parkour.v1.network.serverbound.wallrun.ServerboundEndWallRunPacket;
 import mod.arcomit.parkour.v1.network.serverbound.wallrun.ServerboundStartWallRunPacket;
 import mod.arcomit.parkour.v1.network.serverbound.wallslide.ServerboundUpdateWallSlideStatePacket;
+import mod.arcomit.parkour.v2.core.statemachine.network.BroadcastStateChangeS2CPayload;
+import mod.arcomit.parkour.v2.core.statemachine.network.RequestStateTransitionC2SPayload;
+import mod.arcomit.parkour.v2.core.statemachine.network.SyncLocalPlayerStateS2CPayload;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -127,5 +130,21 @@ public class RegisterPayloadHandler {
 			ServerboundSyncArmHangingDirectionPacket::handle
 		);
 
+		// ==================V2架构========================
+		registrar.playToServer(
+			RequestStateTransitionC2SPayload.TYPE,
+			RequestStateTransitionC2SPayload.STREAM_CODEC,
+			RequestStateTransitionC2SPayload::handle
+		);
+		registrar.playToClient(
+			SyncLocalPlayerStateS2CPayload.TYPE,
+			SyncLocalPlayerStateS2CPayload.STREAM_CODEC,
+			SyncLocalPlayerStateS2CPayload::handle
+		);
+		registrar.playToClient(
+			BroadcastStateChangeS2CPayload.TYPE,
+			BroadcastStateChangeS2CPayload.STREAM_CODEC,
+			BroadcastStateChangeS2CPayload::handle
+		);
 	}
 }

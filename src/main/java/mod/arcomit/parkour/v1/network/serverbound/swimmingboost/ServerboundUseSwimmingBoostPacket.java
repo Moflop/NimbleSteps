@@ -2,9 +2,9 @@ package mod.arcomit.parkour.v1.network.serverbound.swimmingboost;
 
 import mod.arcomit.parkour.ParkourMod;
 import io.netty.buffer.ByteBuf;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 //import mod.arcomit.nimblesteps.event.skills.SwimmingBoostHandler;
-import mod.arcomit.parkour.v2.core.context.SwimMovementData;
+import mod.arcomit.parkour.v2.core.context.SwimData;
 import mod.arcomit.parkour.v2.content.action.swimmingboost.SwimmingBoostLogic;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -29,7 +29,7 @@ public class ServerboundUseSwimmingBoostPacket implements CustomPacketPayload {
 	public static void handle(ServerboundUseSwimmingBoostPacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
-				SwimMovementData swimData = MovementStateContext.get(player).getSwimData();
+				SwimData swimData = ParkourContext.get(player).swimData();
 				if (!SwimmingBoostLogic.canSwimmingBoost(player, swimData)) {
 					return;
 				}

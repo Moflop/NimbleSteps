@@ -2,12 +2,14 @@ package mod.arcomit.parkour.v2.core.sensor;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractBoxSensor {
 	private final String id;
 
 	// 缓存数据
 	private int lastUpdateTick = -1;
+	private Vec3 lastPlayerPos = Vec3.ZERO;
 	private AABB currentWorldBox = new AABB(0,0,0,0,0,0);
 	private boolean isColliding = false;
 
@@ -19,11 +21,11 @@ public abstract class AbstractBoxSensor {
 	 * 核心逻辑：按需更新（惰性求值）
 	 */
 	private void updateIfNeeded(Player player) {
-		// 如果当前的 tick 已经计算过，就直接复用缓存，不再做重复的物理检测
-		if (this.lastUpdateTick != player.tickCount) {
+		if (this.lastUpdateTick != player.tickCount || !this.lastPlayerPos.equals(player.position())) {
 			this.currentWorldBox = calculateWorldBox(player);
 			this.isColliding = checkCollision(player, this.currentWorldBox);
 			this.lastUpdateTick = player.tickCount;
+			this.lastPlayerPos = player.position();
 		}
 	}
 

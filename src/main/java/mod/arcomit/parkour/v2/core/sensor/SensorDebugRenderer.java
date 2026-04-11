@@ -3,7 +3,7 @@ package mod.arcomit.parkour.v2.core.sensor;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -42,8 +42,7 @@ public class SensorDebugRenderer {
 		Player player = mc.player;
 		if (player == null) return;
 
-		MovementStateContext state = MovementStateContext.get(player);
-		SensorManager sensorManager = state.getSensorManager();
+		SensorManager sensorManager = SensorManager.get(player);
 
 		PoseStack poseStack = event.getPoseStack();
 		Vec3 camPos = mc.gameRenderer.getMainCamera().getPosition();

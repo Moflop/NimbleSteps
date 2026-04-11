@@ -1,8 +1,8 @@
 package mod.arcomit.parkour.v2.content.mixin;
 
 import mod.arcomit.parkour.ServerConfig;
-import mod.arcomit.parkour.v1.init.NsAttachmentTypes;
-import mod.arcomit.parkour.v2.content.behavior.slide.SlideState;
+import mod.arcomit.parkour.v2.content.init.PkAttachmentTypes;
+//import mod.arcomit.parkour.v2.content.behavior.slide.SlideState;
 import mod.arcomit.parkour.v2.core.statemachine.ParkourStateMachine;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
@@ -43,18 +43,6 @@ public abstract class LocalPlayerMixin extends LivingEntity {
 	private void hasEnoughImpulseCanSprinting(CallbackInfoReturnable<Boolean> cir) {
 		if (ServerConfig.enableOmniSprint) {
 			cir.setReturnValue(this.isUnderWater() ? this.input.hasForwardImpulse() : Math.abs(this.input.forwardImpulse) >= 0.8 || Math.abs(this.input.leftImpulse) >= 0.8);
-		}
-	}
-
-	/**
-	 * 滑铲不减速
-	 */
-	@Inject(method = "isMovingSlowly", at = @At("HEAD"), cancellable = true)
-	public void slideNotSlowDown(CallbackInfoReturnable<Boolean> cir) {
-		ParkourStateMachine stateMachine = this.getData(NsAttachmentTypes.MOVEMENT_STATE_MACHINE);
-		//TODO：重构
-		if (stateMachine.getCurrentState() == SlideState.INSTANCE) {
-			cir.setReturnValue(false);
 		}
 	}
 

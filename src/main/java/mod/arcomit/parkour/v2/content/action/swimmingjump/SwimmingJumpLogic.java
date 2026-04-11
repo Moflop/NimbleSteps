@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.action.swimmingjump;
 
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.content.mechanic.freestyle.FreestyleHandler;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -23,7 +23,7 @@ public class SwimmingJumpLogic {
 		player.setDeltaMovement(motion.x, 0.42, motion.z);
 	}
 
-	public static boolean canSwimmingJump(LocalPlayer player, MovementStateContext state) {
+	public static boolean canSwimmingJump(LocalPlayer player, ParkourContext state) {
 		return player.jumping
 			&& FreestyleHandler.canFreestyle(player, state);
 	}

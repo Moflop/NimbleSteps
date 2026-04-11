@@ -2,7 +2,7 @@ package mod.arcomit.parkour.v2.content.client.handler;
 
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.core.context.InputData;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -24,7 +24,7 @@ public class InputHandler {
 	public static void recordInput(PlayerTickEvent.Post event) {
 		if (!(event.getEntity() instanceof LocalPlayer player)) return;
 
-		InputData inputData = MovementStateContext.get(player).getInputData();
+		InputData inputData = ParkourContext.get(player).inputData();
 		boolean jumpActiveData = inputData.isJumpKeyActive();
 		boolean isJumpKeyActive = player.input.jumping;
 		if (jumpActiveData != isJumpKeyActive) {

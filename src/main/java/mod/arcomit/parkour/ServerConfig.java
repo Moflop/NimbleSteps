@@ -328,16 +328,16 @@ public class ServerConfig {
 			.comment("Enable wall climb (default: true)")
 			.translation(ParkourMod.MODID + ".configuration.wall_movement_settings.enable_wall_climb")
 			.define("enableWallClimb", true);
-		// 爬墙持续时间
+		// 爬墙持续时间(54*0.075=4.05秒确保能爬上四格)
 		WALL_CLIMB_DURATION = builder
-			.comment("Wall climb duration in ticks (default: 20)")
+			.comment("Wall climb duration in ticks (default: 54)")
 			.translation(ParkourMod.MODID + ".configuration.wall_movement_settings.wall_climb_duration")
-			.defineInRange("wallClimbDuration", 20, 0, Integer.MAX_VALUE);
+			.defineInRange("wallClimbDuration", 54, 0, Integer.MAX_VALUE);
 		// 爬墙速度
 		WALL_CLIMB_SPEED = builder
-			.comment("Wall climb speed (default: 0.2)")
+			.comment("Wall climb speed (default: 0.075)")
 			.translation(ParkourMod.MODID + ".configuration.wall_movement_settings.wall_climb_speed")
-			.defineInRange("wallClimbSpeed", 0.2, 0.05, 1.0);
+			.defineInRange("wallClimb	Speed", 0.075, 0.05, 1.0);
 
 		builder.pop();
 

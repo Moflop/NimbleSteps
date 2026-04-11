@@ -2,7 +2,7 @@ package mod.arcomit.parkour.v1.network.serverbound.jump;
 
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.content.mechanic.freestyle.FreestyleHandler;
 import mod.arcomit.parkour.v2.content.action.swimmingjump.SwimmingJumpLogic;
 import net.minecraft.network.codec.StreamCodec;
@@ -28,7 +28,7 @@ public class ServerboundUseSwimmingJumpPacket implements CustomPacketPayload {
 	public static void handle(ServerboundUseSwimmingJumpPacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
-				MovementStateContext state = MovementStateContext.get(player);
+				ParkourContext state = ParkourContext.get(player);
 				if (!FreestyleHandler.canFreestyle(player, state)) {
 					return;
 				}

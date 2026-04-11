@@ -2,7 +2,7 @@ package mod.arcomit.parkour.v1.network.serverbound.armhang;
 
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,7 +31,7 @@ public record ServerboundSyncArmHangingDirectionPacket(int newDirection3DDataVal
 	public static void handle(ServerboundSyncArmHangingDirectionPacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
-				MovementStateContext state = MovementStateContext.get(player);
+				ParkourContext state = ParkourContext.get(player);
 				//state.setArmHangingDirection(packet.newDirection3DDataValue);
 			}
 		});

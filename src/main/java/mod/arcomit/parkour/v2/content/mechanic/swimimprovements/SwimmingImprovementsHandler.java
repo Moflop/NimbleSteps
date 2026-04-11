@@ -2,7 +2,7 @@ package mod.arcomit.parkour.v2.content.mechanic.swimimprovements;
 
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.ServerConfig;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v1.network.serverbound.jump.ServerboundUseSwimmingJumpPacket;
 import mod.arcomit.parkour.v2.content.action.swimmingjump.SwimmingJumpLogic;
 import net.minecraft.client.player.LocalPlayer;
@@ -53,7 +53,7 @@ public class SwimmingImprovementsHandler {
 		if (!(player instanceof LocalPlayer localPlayer)) {
 			return;
 		}
-		MovementStateContext state = MovementStateContext.get(localPlayer);
+		ParkourContext state = ParkourContext.get(localPlayer);
 		if (!SwimmingJumpLogic.canSwimmingJump(localPlayer, state)) {
 			return;
 		}

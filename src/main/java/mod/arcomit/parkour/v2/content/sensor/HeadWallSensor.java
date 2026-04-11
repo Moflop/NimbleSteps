@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.sensor;
 
-import mod.arcomit.parkour.v1.init.NsTags;
+import mod.arcomit.parkour.v2.content.init.PkTags;
 import mod.arcomit.parkour.v1.utils.CollisionUtils;
 import mod.arcomit.parkour.v2.core.sensor.AbstractBoxSensor;
 import mod.arcomit.parkour.v2.core.sensor.SensorDebugRenderer;
@@ -51,7 +51,7 @@ public class HeadWallSensor extends AbstractBoxSensor {
 
 	@Override
 	protected boolean checkCollision(Player player, AABB box) {
-		return CollisionUtils.isBlockCollision(player.level(), box, NsTags.Blocks.COMMON_IGNORED_BLOCKS);
+		return CollisionUtils.isBlockCollision(player.level(), box, PkTags.Blocks.COMMON_IGNORED_BLOCKS);
 	}
 
 	@Override

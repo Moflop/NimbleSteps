@@ -1,10 +1,10 @@
 package mod.arcomit.parkour.v1.network.serverbound.wallslide;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 //import mod.arcomit.nimblesteps.event.skills.WallSlideHandler;
-import mod.arcomit.parkour.v2.core.context.WallMovementData;
-import mod.arcomit.parkour.v2.content.behavior.slide.WallSlideLogic;
+import mod.arcomit.parkour.v2.core.context.WallData;
+//import mod.arcomit.parkour.v2.content.behavior.slide.WallSlideLogic;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -34,19 +34,19 @@ public record ServerboundUpdateWallSlideStatePacket(boolean shouldWallSlide) imp
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
 				boolean shouldWallSlide = packet.shouldWallSlide();
-				MovementStateContext state = MovementStateContext.get(player);
-				WallMovementData wallData = state.getWallData();
+				ParkourContext state = ParkourContext.get(player);
+				WallData wallData = state.wallData();
 
-				if (shouldWallSlide) {
-					if (WallSlideLogic.isValid(player, state)) {
-						WallSlideLogic.startWallSliding(wallData);
-					} else {
-						// 客户端发来非法请求，直接否定
-						WallSlideLogic.endWallSliding(wallData);
-					}
-				} else {
-					WallSlideLogic.endWallSliding(wallData);
-				}
+//				if (shouldWallSlide) {
+//					if (WallSlideLogic.isValid(player, state)) {
+//						WallSlideLogic.startWallSliding(wallData);
+//					} else {
+//						// 客户端发来非法请求，直接否定
+//						WallSlideLogic.endWallSliding(wallData);
+//					}
+//				} else {
+//					WallSlideLogic.endWallSliding(wallData);
+//				}
 			}
 		});
 	}

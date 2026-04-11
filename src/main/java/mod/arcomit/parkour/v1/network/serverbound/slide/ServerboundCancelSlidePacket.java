@@ -2,10 +2,10 @@ package mod.arcomit.parkour.v1.network.serverbound.slide;
 
 import io.netty.buffer.ByteBuf;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.core.context.GroundMovementData;
-import mod.arcomit.parkour.v2.core.context.MovementStateContext;
+import mod.arcomit.parkour.v2.core.context.GroundData;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 //import mod.arcomit.nimblesteps.event.skills.SlideHandler;
-import mod.arcomit.parkour.v2.content.behavior.slide.SlideLogic;
+//import mod.arcomit.parkour.v2.content.behavior.slide.SlideLogic;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,8 +29,8 @@ public class ServerboundCancelSlidePacket implements CustomPacketPayload {
 	public static void handle(ServerboundCancelSlidePacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
-				GroundMovementData groundData = MovementStateContext.get(player).getGroundData();
-				SlideLogic.cancelSlide(groundData);
+				GroundData groundData = ParkourContext.get(player).groundData();
+				//SlideLogic.cancelSlide(groundData);
 			}
 		});
 	}
