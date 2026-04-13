@@ -1,4 +1,4 @@
-package mod.arcomit.parkour.v2.core.animation;
+package mod.arcomit.parkour.v2.core.animation.player;
 
 import com.zigythebird.playeranimcore.animation.AnimationData;
 import com.zigythebird.playeranimcore.animation.layered.modifier.AbstractModifier;

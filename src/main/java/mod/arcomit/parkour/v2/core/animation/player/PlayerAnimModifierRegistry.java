@@ -1,4 +1,4 @@
-package mod.arcomit.parkour.v2.core.animation;
+package mod.arcomit.parkour.v2.core.animation.player;
 
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import mod.arcomit.parkour.v2.content.init.PkParkourStates;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
-public class ParkourModifierRegistry {
+public class PlayerAnimModifierRegistry {
 
 	// 客户端修饰器注册表
 	private static final Map<ResourceLocation, IModifierFactory> MODIFIER_FACTORIES = new HashMap<>();
@@ -29,12 +29,12 @@ public class ParkourModifierRegistry {
 	 * 核心装配方法：根据状态从注册表中取出工厂并应用修饰器
 	 */
 	public static void applyModifiers(PlayerAnimationController controller, AbstractClientPlayer player, IParkourState state, int variant) {
-		// 1. 每次应用前清理旧修饰器
+		// 每次应用前清理旧修饰器
 		controller.removeAllModifiers();
 
 		if (state == null) return;
 
-		// 2. 查表并应用
+		// 查表并应用
 		ResourceLocation stateId = PkRegistries.PARKOUR_REGISTRY.getKey(state);
 		if (stateId != null) {
 			IModifierFactory factory = MODIFIER_FACTORIES.get(stateId);
@@ -45,7 +45,7 @@ public class ParkourModifierRegistry {
 	}
 
 	/**
-	 * 初始化时注册所有原版自带的修饰器
+	 * 初始化时注册所有修饰器
 	 */
 	public static void registerAll() {
 		// 注册滑铲修饰器

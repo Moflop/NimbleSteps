@@ -3,7 +3,7 @@ package mod.arcomit.parkour.v2.core.statemachine;
 import mod.arcomit.parkour.v2.content.init.PkParkourStates;
 import mod.arcomit.parkour.v2.content.init.PkRegistries;
 import mod.arcomit.parkour.v2.content.client.NsKeyMapping;
-import mod.arcomit.parkour.v2.core.animation.ParkourAnimationManager;
+import mod.arcomit.parkour.v2.core.animation.player.PlayerAnimationManager;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
 import mod.arcomit.parkour.v2.core.statemachine.network.BroadcastStateChangeS2CPayload;
@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class ParkourStateMachine {
 	/**
 	 * 每 tick 更新状态机逻辑。
 	 * 处理服务端与客户端不同的逻辑分支：客户端进行本地预测以保证流畅性，服务端进行合法性校验并在环境变化时处理状态回退。
-	 * * @param player 正在更新状态的玩家。
+	 * @param player 正在更新状态的玩家。
 	 */
 	public static void tick(Player player) {
 		StateData stateData = ParkourContext.get(player).stateData();
@@ -43,28 +44,31 @@ public class ParkourStateMachine {
 		// 服务端自动同步的状态需刷新碰撞箱尺寸和动画
 		if (stateData.getLastTickState() != currentState) {
 			IParkourState lastState = stateData.getLastTickState();
+
+			stateData.setLastTickState(currentState);
+			player.setForcedPose(currentState.getLinkedPose());
+
 			EntityDimensions oldDim = lastState != null ? lastState.getCustomDimensions(player) : null;
 			EntityDimensions newDim = currentState != null ? currentState.getCustomDimensions(player) : null;
-
 			if (oldDim != newDim) {
 				player.refreshDimensions();
 			}
 
-			stateData.setLastTickState(currentState);
-			player.setForcedPose(currentState.getLinkedPose());
 			if (player.level().isClientSide()) {
-				ParkourAnimationManager.syncStateAnimation(player);
+				PlayerAnimationManager.syncStateAnimation(player);
 			}
 		}
 
 		stateData.setTicksInState(stateData.getTicksInState() + 1);
 		currentState.onTick(player);
 
+		tryTickTransition(player, currentState);
+
 		if (player.level().isClientSide()) {
 			// 客户端本地预测状态转换，优先级高于服务端校验，以保证输入响应的绝对流畅性。
 
 			if (player instanceof LocalPlayer localPlayer) {
-				tryTickTransition(localPlayer, currentState);
+				tryLocalTickTransition(localPlayer, currentState);
 			}
 		}else {
 			// 服务端权威校验：如果当前状态已不再合法（通常由于环境突变导致，如脚下悬空），强制退回默认状态。
@@ -89,12 +93,32 @@ public class ParkourStateMachine {
 	 * 尝试在 tick 更新中自动转换状态。
 	 * 遍历当前状态的转换规则，若玩家满足某一规则的 {@code shouldTransitionOnTick} 条件，则执行转换。
 	 * <p>
-	 * 仅限客户端本地玩家使用（在多人游戏中，客户端也会存在其他玩家的实体，故需排除）。
+	 * 适用于双端通用的转换状态规则。
 	 * 此方法由状态机的 {@link #tick} 方法自动调用，通常不应在外部手动调用。
-	 * * @param player	   尝试转换状态的本地玩家。
+	 * @param player	   尝试转换状态的玩家。
 	 * @param currentState 当前所处的状态。
 	 */
-	private static void tryTickTransition(LocalPlayer player, IParkourState currentState) {
+	private static void tryTickTransition(Player player, IParkourState currentState) {
+		List<IParkourStateTransition> transitions = currentState.getTransitions();
+		for (int i = 0; i < transitions.size(); i++) {
+			IParkourStateTransition transition = transitions.get(i);
+			if (transition.shouldTransitionOnTick(player)) {
+				transitionTo(player, transition.getTargetState());
+				return;
+			}
+		}
+	}
+
+	/**
+	 * 尝试在 tick 更新中自动转换状态。
+	 * 遍历当前状态的转换规则，若玩家满足某一规则的 {@code shouldTransitionOnTick} 条件，则执行转换。
+	 * <p>
+	 * 仅限客户端本地玩家使用（在多人游戏中，客户端也会存在其他玩家的实体，故需排除）。
+	 * 此方法由状态机的 {@link #tick} 方法自动调用，通常不应在外部手动调用。
+	 * @param player	   尝试转换状态的本地玩家。
+	 * @param currentState 当前所处的状态。
+	 */
+	private static void tryLocalTickTransition(LocalPlayer player, IParkourState currentState) {
 		// 防止误调
 		if (!player.isLocalPlayer()) {
 			return;
@@ -102,8 +126,28 @@ public class ParkourStateMachine {
 		List<IParkourStateTransition> transitions = currentState.getTransitions();
 		for (int i = 0; i < transitions.size(); i++) {
 			IParkourStateTransition transition = transitions.get(i);
-			if (transition.shouldTransitionOnTick(player)) {
+			if (transition.shouldTransitionOnLocalTick(player)) {
 				localTransitionTo(player, transition.getTargetState());
+				return;
+			}
+		}
+	}
+
+	public static void tryFallTransition(Player player, LivingFallEvent event) {
+		StateData stateData = ParkourContext.get(player).stateData();
+		IParkourState currentState = stateData.getState();
+		List<IParkourStateTransition> transitions = currentState.getTransitions();
+		for (int i = 0; i < transitions.size(); i++) {
+			IParkourStateTransition transition = transitions.get(i);
+			if (transition.shouldTransitionOnFall(player, event)) {
+				IParkourState targetState = transition.getTargetState();
+				transitionTo(player, targetState);
+				if (!player.level().isClientSide()) {
+					ResourceLocation stateId = PkRegistries.PARKOUR_REGISTRY.getKey(targetState);
+					int animVariant = ParkourContext.get(player).stateData().getAnimVariant();
+					PacketDistributor.sendToPlayersTrackingEntity(player,
+						new BroadcastStateChangeS2CPayload(player.getId(), stateId, animVariant));
+				}
 				return;
 			}
 		}
@@ -115,7 +159,7 @@ public class ParkourStateMachine {
 	 * <p>
 	 * 仅限客户端本地玩家使用（在多人游戏中，客户端也会存在其他玩家的实体，故需排除）。
 	 * 此方法通常由输入状态机控制器在捕获到按键时自动调用。
-	 * * @param player	 尝试转换状态的本地玩家。
+	 * @param player	 尝试转换状态的本地玩家。
 	 * @param keyMapping 触发当前事件的按键映射。
 	 */
 	public static void tryInputTransition(LocalPlayer player, NsKeyMapping keyMapping) {
@@ -138,7 +182,7 @@ public class ParkourStateMachine {
 	/**
 	 * 客户端预测状态转换逻辑（使用默认动画变体 0）。
 	 * 执行本地状态转换，并向服务端发送数据包请求同步。
-	 * * @param player	  需要转换状态的本地玩家。
+	 * @param player	  需要转换状态的本地玩家。
 	 * @param targetState 目标状态。
 	 */
 	public static void localTransitionTo(LocalPlayer player, IParkourState targetState) {
@@ -149,7 +193,7 @@ public class ParkourStateMachine {
 	/**
 	 * 客户端预测状态转换逻辑。
 	 * 执行本地状态转换，并向服务端发送数据包（{@link RequestStateTransitionC2SPayload}）请求同步。
-	 * * @param player	  需要转换状态的本地玩家。
+	 * @param player	  需要转换状态的本地玩家。
 	 * @param targetState 目标状态。
 	 * @param animVariant 动画变体 ID。
 	 */
@@ -168,17 +212,18 @@ public class ParkourStateMachine {
 
 	/**
 	 * 双端通用的核心状态转换执行方法（使用默认动画变体 0）。
-	 * * @param player 	  需要转换状态的玩家。
+	 * @param player 	  需要转换状态的玩家。
 	 * @param targetState 目标状态。
 	 */
 	public static void transitionTo(Player player, IParkourState targetState) {
-		transitionTo(player, targetState, 0);
+		int variant = targetState.generateVariant(player);
+		transitionTo(player, targetState, variant);
 	}
 
 	/**
 	 * 双端通用的核心状态转换执行方法。
 	 * 负责触发状态的退出与进入生命周期钩子（{@code onExit} / {@code onEnter}），并处理物理碰撞箱的形变刷新。
-	 * * @param player 	  需要转换状态的玩家。
+	 * @param player 	  需要转换状态的玩家。
 	 * @param targetState 目标状态。
 	 * @param animVariant 动画变体 ID。
 	 */
@@ -198,6 +243,9 @@ public class ParkourStateMachine {
 			targetState.onEnter(player);
 		}
 
+		stateData.setLastTickState(currentState);
+		player.setForcedPose(currentState.getLinkedPose());
+
 		EntityDimensions currentDim = currentState != null ? currentState.getCustomDimensions(player) : null;
 		EntityDimensions targetDim = targetState != null ? targetState.getCustomDimensions(player) : null;
 
@@ -207,10 +255,8 @@ public class ParkourStateMachine {
 			player.refreshDimensions();
 		}
 
-		stateData.setLastTickState(currentState);
-		player.setForcedPose(currentState.getLinkedPose());
 		if (player.level().isClientSide()) {
-			ParkourAnimationManager.syncStateAnimation(player);
+			PlayerAnimationManager.syncStateAnimation(player);
 		}
 	}
 

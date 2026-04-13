@@ -20,10 +20,10 @@ public class TestHandler2 {
 		Player player = event.getEntity();
 		Level level = player.level();
 		boolean isColliding = !level.noCollision(player, player.getBoundingBox().deflate(0.001));
-		if (isColliding) {
-			System.out.println("collision");
-		}else  {
-			System.out.println("no collision");
-		}
+//		if (isColliding) {
+//			System.out.println("collision");
+//		}else  {
+//			System.out.println("no collision");
+//		}
 	}
 }

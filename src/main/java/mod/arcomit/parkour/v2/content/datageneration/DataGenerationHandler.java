@@ -1,4 +1,4 @@
-package mod.arcomit.parkour.v2.content.data;
+package mod.arcomit.parkour.v2.content.datageneration;
 
 import mod.arcomit.parkour.ParkourMod;
 import net.minecraft.core.HolderLookup;
@@ -27,7 +27,7 @@ public class DataGenerationHandler {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
 
-        NsBlockTagsProvider blockTags = new NsBlockTagsProvider(packOutput, lookupProvider, ParkourMod.MODID ,existingFileHelper);
+        PkBlockTagsProvider blockTags = new PkBlockTagsProvider(packOutput, lookupProvider, ParkourMod.MODID ,existingFileHelper);
         dataGenerator.addProvider(event.includeServer(), blockTags);
     }
 }

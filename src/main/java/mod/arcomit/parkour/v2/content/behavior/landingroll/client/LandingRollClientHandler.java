@@ -1,14 +1,14 @@
-package mod.arcomit.parkour.v2.content.behavior.roll.client;
+package mod.arcomit.parkour.v2.content.behavior.landingroll.client;
 
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.ServerConfig;
 import mod.arcomit.parkour.v1.network.serverbound.roll.ServerboundSetLandingRollWindowPacket;
+import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
 import mod.arcomit.parkour.v2.content.client.NsKeyBindings;
 import mod.arcomit.parkour.v2.content.client.NsKeyMapping;
 import mod.arcomit.parkour.v2.content.client.event.InputJustPressedEvent;
 import mod.arcomit.parkour.v2.core.context.GroundData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
-import mod.arcomit.parkour.v2.content.behavior.roll.LandingRollLogic;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.api.distmarker.Dist;
@@ -36,12 +36,12 @@ public class LandingRollClientHandler {
 		}
 
 		LocalPlayer player = Minecraft.getInstance().player;
-		if (player == null) {
+		if (player == null || !PlayerStateUtils.fallWillTakeDamage(player)) {
 			return;
 		}
 
 		GroundData groundData = ParkourContext.get(player).groundData();
-		if (LandingRollLogic.cannotSetLandingRollWindow(player, groundData)) {
+		if (groundData.getLandingRollWindow() > 0) {
 			return;
 		}
 

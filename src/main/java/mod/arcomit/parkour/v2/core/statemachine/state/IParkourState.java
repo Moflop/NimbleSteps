@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.core.statemachine.state;
 
-import mod.arcomit.parkour.v2.core.animation.ParkourAnim;
+import mod.arcomit.parkour.v2.core.animation.player.PlayerAnimmation;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -83,7 +83,7 @@ public interface IParkourState {
 	 * 获取该状态下自定义的玩家动画。
 	 * 如果返回 null，则没有动画。
 	 */
-	default ParkourAnim getLinkedAnimation(Player player) {
+	default PlayerAnimmation getLinkedAnimation(Player player) {
 		return null;
 	}
 

@@ -4,7 +4,7 @@ import mod.arcomit.parkour.ServerConfig;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
 import mod.arcomit.parkour.v2.content.init.PkParkourStates;
 import mod.arcomit.parkour.v2.content.init.PkSounds;
-import mod.arcomit.parkour.v2.core.animation.ParkourAnim;
+import mod.arcomit.parkour.v2.core.animation.player.PlayerAnimmation;
 import mod.arcomit.parkour.v2.core.context.GroundData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
@@ -38,7 +38,11 @@ public class SlideState extends AbstractParkourState {
 			// 当状态不再合法（如时间到、非冲刺等），或者玩家按下了后退键（S键）时，退回默认状态
 			IParkourStateTransition.onTick(
 				PkParkourStates.DEFAULT::get,
-				player -> !this.isValid(player) || player.input.down
+				player -> !this.isValid(player)
+			),
+			IParkourStateTransition.onLocalTick(
+				PkParkourStates.DEFAULT::get,
+				player -> player.input.down
 			)
 		);
 	}
@@ -143,16 +147,16 @@ public class SlideState extends AbstractParkourState {
 	}
 
 	@Override
-	public ParkourAnim getLinkedAnimation(Player player) {
+	public PlayerAnimmation getLinkedAnimation(Player player) {
 		int variant = ParkourContext.get(player).stateData().getAnimVariant();
 		return switch (variant) {
-			case 1 -> ParkourAnim.SLIDE_2;
-			default -> ParkourAnim.SLIDE_1;
+			case 1 -> PlayerAnimmation.SLIDE_2;
+			default -> PlayerAnimmation.SLIDE_1;
 		};
 	}
 
-	@Override
-	public Pose getLinkedPose() {
-		return Pose.STANDING;
-	}
+//	@Override
+//	public Pose getLinkedPose() {
+//		return Pose.STANDING;
+//	}
 }

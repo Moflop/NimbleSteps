@@ -1,4 +1,4 @@
-package mod.arcomit.parkour.v2.content.data;
+package mod.arcomit.parkour.v2.content.datageneration;
 
 import mod.arcomit.parkour.v2.content.init.PkTags;
 import net.minecraft.core.HolderLookup;
@@ -19,8 +19,8 @@ import java.util.concurrent.CompletableFuture;
  * @author Arcomit
  * @since 2026-01-04
  */
-public class NsBlockTagsProvider extends BlockTagsProvider {
-	public NsBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId, @Nullable ExistingFileHelper existingFileHelper) {
+public class PkBlockTagsProvider extends BlockTagsProvider {
+	public PkBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId, @Nullable ExistingFileHelper existingFileHelper) {
 		super(output, lookupProvider, modId, existingFileHelper);
 	}
 

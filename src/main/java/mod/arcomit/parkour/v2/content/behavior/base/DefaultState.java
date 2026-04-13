@@ -12,6 +12,7 @@ import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 
 import java.util.List;
 
@@ -49,8 +50,23 @@ public class DefaultState extends AbstractParkourState {
 					&& player.input.forwardImpulse < 0
 					&& player.onGround()
 					&& PkParkourStates.BACKSTEP.get().canEnter(player)
-			)
+			),
 
+			// 4. 在摔落翻滚判断期摔落 -> 摔落翻滚
+			new IParkourStateTransition() {
+				@Override
+				public IParkourState getTargetState() { return PkParkourStates.LANDING_ROLL.get(); }
+
+				@Override
+				public boolean shouldTransitionOnFall(Player player, LivingFallEvent event) {
+					if (PkParkourStates.LANDING_ROLL.get().canEnter(player)) {
+						event.setDamageMultiplier(0);
+						event.setCanceled(true);
+						return true;
+					}
+					return false;
+				}
+			}
 		);
 	}
 }
