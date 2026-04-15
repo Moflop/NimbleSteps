@@ -23,7 +23,6 @@ public class WallData {
 	private int wallRunDuration = 0;
 	private int wallRunCount = 0;
 
-	private boolean wallSliding = false;
 	private int wallSlideJumpReleaseGraceTicks = 0;
 	private int wallSlideDirection = -1;
 
@@ -49,7 +48,6 @@ public class WallData {
 		instance.group(
 			Codec.INT.optionalFieldOf("wallRunDuration", 0).forGetter(WallData::getWallRunDuration),
 			Codec.INT.optionalFieldOf("wallRunCount", 0).forGetter(WallData::getWallRunCount),
-			Codec.BOOL.optionalFieldOf("isWallSliding", false).forGetter(WallData::isWallSliding),
 			Codec.INT.optionalFieldOf("wallSlideJumpReleaseGraceTicks", 0).forGetter(WallData::getWallSlideJumpReleaseGraceTicks),
 			Codec.INT.optionalFieldOf("wallSlideDirection", -1).forGetter(WallData::getWallSlideDirection),
 			Codec.BOOL.optionalFieldOf("isArmHanging", false).forGetter(WallData::isArmHanging),
@@ -65,7 +63,6 @@ public class WallData {
 		(buf, data) -> {
 			ByteBufCodecs.VAR_INT.encode(buf, data.getWallRunDuration());
 			ByteBufCodecs.VAR_INT.encode(buf, data.getWallRunCount());
-			ByteBufCodecs.BOOL.encode(buf, data.isWallSliding());
 			ByteBufCodecs.VAR_INT.encode(buf, data.getWallSlideJumpReleaseGraceTicks());
 			ByteBufCodecs.VAR_INT.encode(buf, data.getWallSlideDirection());
 			ByteBufCodecs.BOOL.encode(buf, data.isArmHanging());
@@ -78,7 +75,6 @@ public class WallData {
 		buf -> new WallData(
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
-			ByteBufCodecs.BOOL.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.BOOL.decode(buf),
@@ -93,7 +89,6 @@ public class WallData {
 	public void copyFrom(WallData other) {
 		this.wallRunDuration = other.wallRunDuration;
 		this.wallRunCount = other.wallRunCount;
-		this.wallSliding = other.wallSliding;
 		this.wallSlideJumpReleaseGraceTicks = other.wallSlideJumpReleaseGraceTicks;
 		this.wallSlideDirection = other.wallSlideDirection;
 		this.armHanging = other.armHanging;

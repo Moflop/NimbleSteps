@@ -66,7 +66,13 @@ public class DefaultState extends AbstractParkourState {
 					}
 					return false;
 				}
-			}
+			},
+
+			// 5. 在空中下落，贴近墙壁并按住跳跃键 -> 进入滑墙
+			IParkourStateTransition.onLocalTick(
+				PkParkourStates.WALL_SLIDE::get,
+				player -> player.input.jumping && PkParkourStates.WALL_SLIDE.get().canEnter(player)
+			)
 		);
 	}
 }

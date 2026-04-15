@@ -3,12 +3,15 @@ package mod.arcomit.parkour.v2.core.animation.player;
 import com.zigythebird.playeranim.animation.PlayerAnimManager;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import com.zigythebird.playeranim.api.PlayerAnimationAccess;
+import com.zigythebird.playeranimcore.animation.layered.modifier.AbstractModifier;
 import com.zigythebird.playeranimcore.enums.PlayState;
 import mod.arcomit.parkour.ParkourMod;
+import mod.arcomit.parkour.v2.content.init.PkRegistries;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -24,75 +27,128 @@ import java.util.UUID;
 @OnlyIn(Dist.CLIENT)
 @EventBusSubscriber(modid = ParkourMod.MODID, value = Dist.CLIENT)
 public class PlayerAnimationManager {
-	public static final int PARKOUR_LAYER_ID = 1000;
 
-	// 缓存玩家的动画控制器
-	private static final Map<UUID, PlayerAnimationController> CONTROLLERS = new HashMap<>();
+	public static final int PARKOUR_STATE_LAYER_ID = 1000;
+	public static final int PARKOUR_ACTION_LAYER_ID = 2000;
 
-	private static PlayerAnimationController getOrCreateController(AbstractClientPlayer player) {
-		UUID uuid = player.getUUID();
-		if (CONTROLLERS.containsKey(uuid)) {
-			return CONTROLLERS.get(uuid);
-		}
-		
-		PlayerAnimationController controller = new PlayerAnimationController(player, (animController, state, animationSetter) -> {
-			// 由于我们将通过 triggerAnimation 手动触发，状态机只需保持 CONTINUE 即可
-			return PlayState.CONTINUE;
-		});
+	// 分别缓存状态控制器和动作控制器
+	private static final Map<UUID, PlayerAnimationController> STATE_CONTROLLERS = new HashMap<>();
+	private static final Map<UUID, PlayerAnimationController> ACTION_CONTROLLERS = new HashMap<>();
 
-		CONTROLLERS.put(uuid, controller);
-		return controller;
+	// 记录一次性动画是否可被状态切换打断
+	private static final Map<UUID, Boolean> ACTION_INTERRUPTIBLE = new HashMap<>();
+
+	private static PlayerAnimationController getOrCreateStateController(AbstractClientPlayer player) {
+		return STATE_CONTROLLERS.computeIfAbsent(player.getUUID(), uuid ->
+			new PlayerAnimationController(player, (animController, state, animationSetter) -> PlayState.CONTINUE));
 	}
 
+	private static PlayerAnimationController getOrCreateActionController(AbstractClientPlayer player) {
+		return ACTION_CONTROLLERS.computeIfAbsent(player.getUUID(), uuid ->
+			new PlayerAnimationController(player, (animController, state, animationSetter) -> PlayState.CONTINUE));
+	}
+
+	/**
+	 * 播放一次性动画（如翻滚、受击）
+	 *
+	 * @param player        目标玩家
+	 * @param animationId     要播放的动作ID
+	 * @param interruptible 是否会被状态改变（如落地、跳跃）打断
+	 */
+	public static void playOneOffAnimation(AbstractClientPlayer player, ResourceLocation animationId, boolean interruptible) {
+		PlayerAnimManager manager = PlayerAnimationAccess.getPlayerAnimManager(player);
+		UUID uuid = player.getUUID();
+
+		if (ACTION_CONTROLLERS.containsKey(uuid)) {
+			PlayerAnimationController oldController = ACTION_CONTROLLERS.get(uuid);
+			oldController.stop();
+			oldController.removeAllModifiers();
+			manager.removeLayer(PARKOUR_ACTION_LAYER_ID);
+		}
+
+		PlayerAnimationController newActionController = new PlayerAnimationController(player, (animController, state, animationSetter) -> PlayState.CONTINUE);
+
+		AbstractModifier modifier = ClientAnimationRegistry.getActionModifier(animationId, player);
+		if (modifier != null) {
+			newActionController.addModifierLast(modifier);
+		}
+
+		ACTION_CONTROLLERS.put(uuid, newActionController);
+		newActionController.triggerAnimation(animationId, 0);
+		manager.addAnimLayer(PARKOUR_ACTION_LAYER_ID, newActionController);
+		ACTION_INTERRUPTIBLE.put(uuid, interruptible);
+	}
+
+	/**
+	 * 由状态机每 Tick 触发，同步常驻状态的动画
+	 */
 	public static void syncStateAnimation(Player player) {
-		if (!(player instanceof AbstractClientPlayer clientPlayer)) return;
+		if (!(player instanceof AbstractClientPlayer clientPlayer)) {
+			return;
+		}
 
 		StateData stateData = ParkourContext.get(player).stateData();
 		IParkourState currentState = stateData.getState();
 
-		if (currentState == null) return;
+		if (currentState == null) {
+			return;
+		}
 
-		PlayerAnimmation targetAnim = currentState.getLinkedAnimation(player);
-		PlayerAnimationController controller = getOrCreateController(clientPlayer);
+		UUID uuid = player.getUUID();
+
+		// 处理高层级一次性动画的打断判定
+		if (ACTION_CONTROLLERS.containsKey(uuid)) {
+			PlayerAnimationController actionController = ACTION_CONTROLLERS.get(uuid);
+			if (actionController.isActive() && ACTION_INTERRUPTIBLE.getOrDefault(uuid, true)) {
+				actionController.stop();
+			}
+		}
+
+		ResourceLocation stateId = PkRegistries.PARKOUR_REGISTRY.getKey(currentState);
+		PlayerAnimation targetAnim = ClientAnimationRegistry.getAnimation(stateId, stateData.getAnimVariant());
+
+		PlayerAnimationController stateController = getOrCreateStateController(clientPlayer);
 		PlayerAnimManager manager = PlayerAnimationAccess.getPlayerAnimManager(clientPlayer);
 
 		if (targetAnim != null) {
+			stateController.removeAllModifiers();
+
+			IModifierFactory factory = ClientAnimationRegistry.getModifierFactory(stateId);
+			if (factory != null) {
+				factory.apply(stateController, clientPlayer, currentState, stateData.getAnimVariant());
+			}
+
 			int offsetTicks = stateData.getTicksInState();
-			int variant = stateData.getAnimVariant();
-
-			PlayerAnimModifierRegistry.applyModifiers(controller, clientPlayer, currentState, variant);
-
-			controller.triggerAnimation(targetAnim.id, offsetTicks);
-			manager.addAnimLayer(PARKOUR_LAYER_ID, controller);
-
+			stateController.triggerAnimation(targetAnim.id, offsetTicks);
+			manager.addAnimLayer(PARKOUR_STATE_LAYER_ID, stateController);
 		} else {
-			controller.stop();
-			controller.removeAllModifiers();
-			manager.removeLayer(PARKOUR_LAYER_ID);
+			stateController.stop();
+			stateController.removeAllModifiers();
+			manager.removeLayer(PARKOUR_STATE_LAYER_ID);
 		}
 	}
 
-	/**
-	 * 当本地玩家断开连接、退出存档时，清空所有动画缓存
-	 */
 	@SubscribeEvent
 	public static void onClientLoggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
-		CONTROLLERS.values().forEach(PlayerAnimationController::stop); // 停止所有动画
-		CONTROLLERS.clear();
+		STATE_CONTROLLERS.values().forEach(PlayerAnimationController::stop);
+		ACTION_CONTROLLERS.values().forEach(PlayerAnimationController::stop);
+		STATE_CONTROLLERS.clear();
+		ACTION_CONTROLLERS.clear();
+		ACTION_INTERRUPTIBLE.clear();
 	}
 
-	/**
-	 * 当任何玩家实体（包括本地玩家和其他玩家）从客户端世界被移除时（比如走出了视距、死亡或下线）
-	 * 及时清理他们的 UUID 缓存
-	 */
 	@SubscribeEvent
 	public static void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
-		// 确保是客户端世界，且离开的实体是客户端玩家
 		if (event.getLevel().isClientSide() && event.getEntity() instanceof AbstractClientPlayer player) {
-			PlayerAnimationController controller = CONTROLLERS.remove(player.getUUID());
-			if (controller != null) {
-				controller.stop(); // 停止动画，释放可能的内部资源
-			}
+			UUID uuid = player.getUUID();
+
+			PlayerAnimationController stateController = STATE_CONTROLLERS.remove(uuid);
+			if (stateController != null) stateController.stop();
+
+			PlayerAnimationController actionController = ACTION_CONTROLLERS.remove(uuid);
+			if (actionController != null) actionController.stop();
+
+			ACTION_INTERRUPTIBLE.remove(uuid);
 		}
 	}
 }

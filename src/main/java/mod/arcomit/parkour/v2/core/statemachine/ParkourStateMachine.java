@@ -47,6 +47,7 @@ public class ParkourStateMachine {
 
 			stateData.setLastTickState(currentState);
 			player.setForcedPose(currentState.getLinkedPose());
+			player.updatePlayerPose();
 
 			EntityDimensions oldDim = lastState != null ? lastState.getCustomDimensions(player) : null;
 			EntityDimensions newDim = currentState != null ? currentState.getCustomDimensions(player) : null;
@@ -62,11 +63,14 @@ public class ParkourStateMachine {
 		stateData.setTicksInState(stateData.getTicksInState() + 1);
 		currentState.onTick(player);
 
-		tryTickTransition(player, currentState);
+		// 严禁客户端私自切断 RemotePlayer 的状态
+		// 只有服务端，或者客户端的本地玩家，才进行 Tick 级别的状态自动转换
+		if (!player.level().isClientSide() || player.isLocalPlayer()) {
+			tryTickTransition(player, currentState);
+		}
 
 		if (player.level().isClientSide()) {
-			// 客户端本地预测状态转换，优先级高于服务端校验，以保证输入响应的绝对流畅性。
-
+			// 仅客户端本地预测状态转换
 			if (player instanceof LocalPlayer localPlayer) {
 				tryLocalTickTransition(localPlayer, currentState);
 			}
@@ -80,7 +84,7 @@ public class ParkourStateMachine {
 					ResourceLocation defaultId = PkRegistries.PARKOUR_REGISTRY.getKey(defaultState);
 					if (defaultId != null) {
 						PacketDistributor.sendToPlayer((ServerPlayer) player,
-							new SyncLocalPlayerStateS2CPayload(defaultId));
+							new SyncLocalPlayerStateS2CPayload(defaultId, 0));
 						PacketDistributor.sendToPlayersTrackingEntity(player,
 							new BroadcastStateChangeS2CPayload(player.getId(), defaultId, 0));
 					}
@@ -103,7 +107,14 @@ public class ParkourStateMachine {
 		for (int i = 0; i < transitions.size(); i++) {
 			IParkourStateTransition transition = transitions.get(i);
 			if (transition.shouldTransitionOnTick(player)) {
+				IParkourState targetState = transition.getTargetState();
 				transitionTo(player, transition.getTargetState());
+				if (!player.level().isClientSide()){
+					ResourceLocation stateId = PkRegistries.PARKOUR_REGISTRY.getKey(targetState);
+					int animVariant = ParkourContext.get(player).stateData().getAnimVariant();
+					PacketDistributor.sendToPlayersTrackingEntity(player,
+						new BroadcastStateChangeS2CPayload(player.getId(), stateId, animVariant));
+				}
 				return;
 			}
 		}
@@ -206,7 +217,7 @@ public class ParkourStateMachine {
 		// 发包请求服务端进行状态转换验证并广播
 		ResourceLocation targetId = PkRegistries.PARKOUR_REGISTRY.getKey(targetState);
 		if (targetId != null) {
-			PacketDistributor.sendToServer(new RequestStateTransitionC2SPayload(targetId, animVariant));
+ 			PacketDistributor.sendToServer(new RequestStateTransitionC2SPayload(targetId, animVariant));
 		}
 	}
 
@@ -228,6 +239,7 @@ public class ParkourStateMachine {
 	 * @param animVariant 动画变体 ID。
 	 */
 	public static void transitionTo(Player player, IParkourState targetState, int animVariant) {
+		System.out.println((player.level().isClientSide ? "[Client]" : "[Server]") +" Transitioning player: " + player.getName().getString() + " state: " + targetState.getClass().getSimpleName() + " anim variant: " + animVariant);
 		StateData stateData = ParkourContext.get(player).stateData();
 		IParkourState currentState = stateData.getState();
 
@@ -244,7 +256,8 @@ public class ParkourStateMachine {
 		}
 
 		stateData.setLastTickState(currentState);
-		player.setForcedPose(currentState.getLinkedPose());
+		player.setForcedPose(targetState.getLinkedPose());
+		player.updatePlayerPose();
 
 		EntityDimensions currentDim = currentState != null ? currentState.getCustomDimensions(player) : null;
 		EntityDimensions targetDim = targetState != null ? targetState.getCustomDimensions(player) : null;
@@ -277,7 +290,7 @@ public class ParkourStateMachine {
 				if (defaultId != null) {
 					// 同步玩家本人的客户端
 					PacketDistributor.sendToPlayer(
-						serverPlayer, new SyncLocalPlayerStateS2CPayload(defaultId)
+						serverPlayer, new SyncLocalPlayerStateS2CPayload(defaultId, 0)
 					);
 					// 广播周围观察者的客户端
 					PacketDistributor.sendToPlayersTrackingEntity(

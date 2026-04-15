@@ -1,6 +1,8 @@
 package mod.arcomit.parkour.v2.core.statemachine.state;
 
-import mod.arcomit.parkour.v2.core.animation.player.PlayerAnimmation;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -17,12 +19,12 @@ public interface IParkourState {
 	default void onExit(Player player) {}
 
 	default void onTick(Player player) {
-		if (player.level().isClientSide()) {
-			onClientTick(player);
+		if (player instanceof AbstractClientPlayer clientPlayer) {
+			onClientTick(clientPlayer);
 			if (player.isLocalPlayer()) {
-				onLocalPlayerTick(player);
+				onLocalPlayerTick((LocalPlayer) player);
 			} else {
-				onRemotePlayerTick(player);
+				onRemotePlayerTick((RemotePlayer) player);
 			}
 		} else {
 			onServerTick(player);
@@ -37,17 +39,17 @@ public interface IParkourState {
 	/**
 	 * 客户端通用 Tick：处理所有玩家都能看到的表现（粒子、音效、动画状态）
 	 */
-	default void onClientTick(Player player) {}
+	default void onClientTick(AbstractClientPlayer player) {}
 
 	/**
 	 * 客户端本地玩家 Tick：处理只有自己视角的表现（FOV变化、相机倾斜、屏幕抖动）
 	 */
-	default void onLocalPlayerTick(Player player) {}
+	default void onLocalPlayerTick(LocalPlayer player) {}
 
 	/**
 	 * 客户端其他玩家 Tick：通常不需要重写，除非有极其特殊的剔除逻辑，需要排除自己
 	 */
-	default void onRemotePlayerTick(Player player) {}
+	default void onRemotePlayerTick(RemotePlayer player) {}
 
 	/**
 	 * 用于服务端校验是否能进入该状态
@@ -74,17 +76,10 @@ public interface IParkourState {
 	/**
 	 * 当状态机决定进入此状态时调用，用于生成并分配一个变体 ID。
 	 * 默认返回 0（代表没有变体或默认动画）。
+	 * 应尽量使用双端一致的随机数生成方式，确保服务器和客户端生成的变体 ID 一致，以避免部分动画不同步的情况。
 	 */
 	default int generateVariant(Player player) {
 		return 0;
-	}
-
-	/**
-	 * 获取该状态下自定义的玩家动画。
-	 * 如果返回 null，则没有动画。
-	 */
-	default PlayerAnimmation getLinkedAnimation(Player player) {
-		return null;
 	}
 
 	/**

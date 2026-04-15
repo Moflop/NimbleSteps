@@ -55,11 +55,12 @@ public record RequestStateTransitionC2SPayload(ResourceLocation targetStateId, i
 					StateData stateData = ParkourContext.get(player).stateData();
 					IParkourState currentState = stateData.getState();
 					ResourceLocation currentStateId = PkRegistries.PARKOUR_REGISTRY.getKey(currentState);
+					int variant = stateData.getAnimVariant();
 
 					// 向客户端发包RejectStateRequestS2CPayload拒绝请求并把状态还原
 					if (currentStateId != null) {
 						PacketDistributor.sendToPlayer(player,
-							new SyncLocalPlayerStateS2CPayload(currentStateId)
+							new SyncLocalPlayerStateS2CPayload(currentStateId, variant)
 						);
 					}
 				}

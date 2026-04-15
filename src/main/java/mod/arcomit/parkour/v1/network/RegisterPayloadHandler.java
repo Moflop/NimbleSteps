@@ -18,6 +18,9 @@ import mod.arcomit.parkour.v1.network.serverbound.wallrun.ServerboundClampWallRu
 import mod.arcomit.parkour.v1.network.serverbound.wallrun.ServerboundEndWallRunPacket;
 import mod.arcomit.parkour.v1.network.serverbound.wallrun.ServerboundStartWallRunPacket;
 import mod.arcomit.parkour.v1.network.serverbound.wallslide.ServerboundUpdateWallSlideStatePacket;
+import mod.arcomit.parkour.v2.content.behavior.wallslide.network.BroadcastWallSlideDirS2CPayload;
+import mod.arcomit.parkour.v2.core.animation.player.network.BroadcastPlayActionS2CPayload;
+import mod.arcomit.parkour.v2.core.animation.player.network.RequestPlayActionC2SPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.BroadcastStateChangeS2CPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.RequestStateTransitionC2SPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.SyncLocalPlayerStateS2CPayload;
@@ -145,6 +148,23 @@ public class RegisterPayloadHandler {
 			BroadcastStateChangeS2CPayload.TYPE,
 			BroadcastStateChangeS2CPayload.STREAM_CODEC,
 			BroadcastStateChangeS2CPayload::handle
+		);
+
+		registrar.playToServer(
+			RequestPlayActionC2SPayload.TYPE,
+			RequestPlayActionC2SPayload.STREAM_CODEC,
+			RequestPlayActionC2SPayload::handle
+		);
+		registrar.playToClient(
+			BroadcastPlayActionS2CPayload.TYPE,
+			BroadcastPlayActionS2CPayload.STREAM_CODEC,
+			BroadcastPlayActionS2CPayload::handle
+		);
+
+		registrar.playToClient(
+			BroadcastWallSlideDirS2CPayload.TYPE,
+			BroadcastWallSlideDirS2CPayload.STREAM_CODEC,
+			BroadcastWallSlideDirS2CPayload::handle
 		);
 	}
 }

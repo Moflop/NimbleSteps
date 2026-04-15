@@ -6,6 +6,7 @@ import mod.arcomit.parkour.v2.core.statemachine.ParkourStateMachine;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -19,11 +20,12 @@ import org.jetbrains.annotations.NotNull;
  * @author Arcomit
  * @since 2026-03-14
  */
-public record SyncLocalPlayerStateS2CPayload(ResourceLocation correctStateId) implements CustomPacketPayload {
+public record SyncLocalPlayerStateS2CPayload(ResourceLocation correctStateId, int animVariant) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<SyncLocalPlayerStateS2CPayload> TYPE = new CustomPacketPayload.Type<>(ParkourMod.prefix("sync_state_to_local"));
 
 	public static final StreamCodec<FriendlyByteBuf, SyncLocalPlayerStateS2CPayload> STREAM_CODEC = StreamCodec.composite(
 		ResourceLocation.STREAM_CODEC, SyncLocalPlayerStateS2CPayload::correctStateId,
+		ByteBufCodecs.INT, SyncLocalPlayerStateS2CPayload::animVariant,
 		SyncLocalPlayerStateS2CPayload::new
 	);
 
@@ -39,7 +41,7 @@ public record SyncLocalPlayerStateS2CPayload(ResourceLocation correctStateId) im
 			if (player != null) {
 				IParkourState correctState = PkRegistries.PARKOUR_REGISTRY.get(packet.correctStateId());
 				if (correctState != null) {
-					ParkourStateMachine.transitionTo(player, correctState);
+					ParkourStateMachine.transitionTo(player, correctState, packet.animVariant());
 				}
 			}
 		});
