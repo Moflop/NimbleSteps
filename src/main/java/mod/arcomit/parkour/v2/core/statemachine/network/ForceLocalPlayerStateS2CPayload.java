@@ -20,13 +20,13 @@ import org.jetbrains.annotations.NotNull;
  * @author Arcomit
  * @since 2026-03-14
  */
-public record SyncLocalPlayerStateS2CPayload(ResourceLocation correctStateId, int animVariant) implements CustomPacketPayload {
-	public static final CustomPacketPayload.Type<SyncLocalPlayerStateS2CPayload> TYPE = new CustomPacketPayload.Type<>(ParkourMod.prefix("sync_state_to_local"));
+public record ForceLocalPlayerStateS2CPayload(ResourceLocation correctStateId, int animVariant) implements CustomPacketPayload {
+	public static final CustomPacketPayload.Type<ForceLocalPlayerStateS2CPayload> TYPE = new CustomPacketPayload.Type<>(ParkourMod.prefix("sync_state_to_local"));
 
-	public static final StreamCodec<FriendlyByteBuf, SyncLocalPlayerStateS2CPayload> STREAM_CODEC = StreamCodec.composite(
-		ResourceLocation.STREAM_CODEC, SyncLocalPlayerStateS2CPayload::correctStateId,
-		ByteBufCodecs.INT, SyncLocalPlayerStateS2CPayload::animVariant,
-		SyncLocalPlayerStateS2CPayload::new
+	public static final StreamCodec<FriendlyByteBuf, ForceLocalPlayerStateS2CPayload> STREAM_CODEC = StreamCodec.composite(
+		ResourceLocation.STREAM_CODEC, ForceLocalPlayerStateS2CPayload::correctStateId,
+		ByteBufCodecs.INT, ForceLocalPlayerStateS2CPayload::animVariant,
+		ForceLocalPlayerStateS2CPayload::new
 	);
 
 	@Override
@@ -34,12 +34,12 @@ public record SyncLocalPlayerStateS2CPayload(ResourceLocation correctStateId, in
 		return TYPE;
 	}
 
-	public static void handle(SyncLocalPlayerStateS2CPayload packet, IPayloadContext context) {
+	public static void handle(ForceLocalPlayerStateS2CPayload packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			// 客户端逻辑：强制拉回服务端的合法状态
 			Player player = Minecraft.getInstance().player;
 			if (player != null) {
-				IParkourState correctState = PkRegistries.PARKOUR_REGISTRY.get(packet.correctStateId());
+				IParkourState correctState = PkRegistries.PARKOUR_STATE_REGISTRY.get(packet.correctStateId());
 				if (correctState != null) {
 					ParkourStateMachine.transitionTo(player, correctState, packet.animVariant());
 				}

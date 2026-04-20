@@ -11,6 +11,11 @@ import java.util.List;
 
 public interface IParkourState {
 
+	/**
+	 * 默认的动画变体 ID
+	 */
+	public static final int DEFAULT_ANIM_VARIANT = 0;
+
 	// 此处应用List.of
 	List<IParkourStateTransition> getTransitions();
 
@@ -79,7 +84,7 @@ public interface IParkourState {
 	 * 应尽量使用双端一致的随机数生成方式，确保服务器和客户端生成的变体 ID 一致，以避免部分动画不同步的情况。
 	 */
 	default int generateVariant(Player player) {
-		return 0;
+		return DEFAULT_ANIM_VARIANT;
 	}
 
 	/**

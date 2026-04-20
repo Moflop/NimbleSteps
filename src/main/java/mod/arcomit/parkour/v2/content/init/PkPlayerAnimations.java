@@ -18,4 +18,8 @@ public class PkPlayerAnimations {
 
 	public static final PlayerAnimation LANDING_ROLL = new PlayerAnimation(ParkourMod.prefix("landing_roll"));
 
+	public static final PlayerAnimation WALL_RUN_LEFT = new PlayerAnimation(ParkourMod.prefix("wall_run_left"));
+	public static final PlayerAnimation WALL_RUN_RIGHT = new PlayerAnimation(ParkourMod.prefix("wall_run_right"));
+
+	public static final PlayerAnimation WALL_CLIMB = new PlayerAnimation(ParkourMod.prefix("wall_climb"));
 }

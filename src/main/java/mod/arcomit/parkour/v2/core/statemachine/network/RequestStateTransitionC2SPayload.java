@@ -41,40 +41,25 @@ public record RequestStateTransitionC2SPayload(ResourceLocation targetStateId, i
 			if (context.player() instanceof ServerPlayer player) {
 				ResourceLocation stateId = packet.targetStateId();
 				int animVariant = packet.animVariant();
-				IParkourState targetState = PkRegistries.PARKOUR_REGISTRY.get(stateId);
+				IParkourState targetState = PkRegistries.PARKOUR_STATE_REGISTRY.get(stateId);
 
 				if (targetState != null && targetState.canEnter(player)) {
 					ParkourStateMachine.transitionTo(player, targetState, animVariant);
-
-					// 发送给所有能看到该玩家的客户端（通常不需要发给玩家自己，因为客户端已经提前预测了状态）
-					PacketDistributor.sendToPlayersTrackingEntity(player,
-						new BroadcastStateChangeS2CPayload(player.getId(), stateId, animVariant)
-					);
 				} else {
 					// 获取当前服务端合法状态的ID
 					StateData stateData = ParkourContext.get(player).stateData();
 					IParkourState currentState = stateData.getState();
-					ResourceLocation currentStateId = PkRegistries.PARKOUR_REGISTRY.getKey(currentState);
+					ResourceLocation currentStateId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(currentState);
 					int variant = stateData.getAnimVariant();
 
 					// 向客户端发包RejectStateRequestS2CPayload拒绝请求并把状态还原
 					if (currentStateId != null) {
 						PacketDistributor.sendToPlayer(player,
-							new SyncLocalPlayerStateS2CPayload(currentStateId, variant)
+							new ForceLocalPlayerStateS2CPayload(currentStateId, variant)
 						);
 					}
 				}
 			}
 		});
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof RequestStateTransitionC2SPayload;
-	}
-
-	@Override
-	public int hashCode() {
-		return getClass().hashCode();
 	}
 }

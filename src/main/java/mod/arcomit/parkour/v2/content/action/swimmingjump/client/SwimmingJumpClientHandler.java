@@ -1,10 +1,9 @@
-package mod.arcomit.parkour.v2.content.mechanic.swimimprovements;
+package mod.arcomit.parkour.v2.content.action.swimmingjump.client;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.ServerConfig;
-import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v1.network.serverbound.jump.ServerboundUseSwimmingJumpPacket;
 import mod.arcomit.parkour.v2.content.action.swimmingjump.SwimmingJumpLogic;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
@@ -16,34 +15,27 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * 游泳改进处理器。
+ * TODO：描述
  *
  * @author Arcomit
- * @since 2026-01-07
+ * @since 2026-04-15
  */
-@EventBusSubscriber(modid = ParkourMod.MODID)
-public class SwimmingImprovementsHandler {
+@OnlyIn(Dist.CLIENT)
+@EventBusSubscriber(modid = ParkourMod.MODID, value = Dist.CLIENT)
+public class SwimmingJumpClientHandler {
 
-	@OnlyIn(Dist.CLIENT)
-	@SubscribeEvent
-	public static void checkSwimInterrupt(PlayerTickEvent.Post event) {
-		if (!ServerConfig.enableStopSwimmingWhenIdle) {
-			return;
-		}
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public static void trySwimmingJump(PlayerTickEvent.Post event) {
 		Player player = event.getEntity();
 		if (!(player instanceof LocalPlayer localPlayer)) {
 			return;
 		}
-
-		if (!localPlayer.isSwimming()) {
+		ParkourContext state = ParkourContext.get(localPlayer);
+		if (!SwimmingJumpLogic.canSwimmingJump(localPlayer, state)) {
 			return;
 		}
 
-		boolean playerStopMove = !localPlayer.input.hasForwardImpulse();
-		if (playerStopMove) {
-			localPlayer.setSprinting(false);
-			localPlayer.setSwimming(false);
-		}
+		SwimmingJumpLogic.applySwimmingJumpMovement(localPlayer);
+		PacketDistributor.sendToServer(new ServerboundUseSwimmingJumpPacket());
 	}
-
 }

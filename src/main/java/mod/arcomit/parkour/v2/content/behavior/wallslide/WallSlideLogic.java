@@ -103,7 +103,7 @@ public class WallSlideLogic {
 	 * 辅助方法：检测特定方向的墙壁碰撞
 	 */
 	private static boolean checkWallCollision(Player player, SensorManager sensorManager, Direction dir) {
-		AbstractBoxSensor headSensor = sensorManager.getSensor("head_wall" + dir.getName());
+		AbstractBoxSensor headSensor = sensorManager.getSensor("head_wall_" + dir.getName());
 		AbstractBoxSensor feetSensor = sensorManager.getSensor("feet_wall_" + dir.getName());
 
 		return headSensor != null && feetSensor != null

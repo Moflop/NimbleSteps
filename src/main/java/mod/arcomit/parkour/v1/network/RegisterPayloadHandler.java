@@ -23,7 +23,7 @@ import mod.arcomit.parkour.v2.core.animation.player.network.BroadcastPlayActionS
 import mod.arcomit.parkour.v2.core.animation.player.network.RequestPlayActionC2SPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.BroadcastStateChangeS2CPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.RequestStateTransitionC2SPayload;
-import mod.arcomit.parkour.v2.core.statemachine.network.SyncLocalPlayerStateS2CPayload;
+import mod.arcomit.parkour.v2.core.statemachine.network.ForceLocalPlayerStateS2CPayload;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -140,9 +140,9 @@ public class RegisterPayloadHandler {
 			RequestStateTransitionC2SPayload::handle
 		);
 		registrar.playToClient(
-			SyncLocalPlayerStateS2CPayload.TYPE,
-			SyncLocalPlayerStateS2CPayload.STREAM_CODEC,
-			SyncLocalPlayerStateS2CPayload::handle
+			ForceLocalPlayerStateS2CPayload.TYPE,
+			ForceLocalPlayerStateS2CPayload.STREAM_CODEC,
+			ForceLocalPlayerStateS2CPayload::handle
 		);
 		registrar.playToClient(
 			BroadcastStateChangeS2CPayload.TYPE,

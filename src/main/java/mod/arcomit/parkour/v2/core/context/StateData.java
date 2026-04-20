@@ -1,12 +1,9 @@
 package mod.arcomit.parkour.v2.core.context;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.content.init.PkParkourStates;
 import mod.arcomit.parkour.v2.content.init.PkRegistries;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
@@ -48,7 +45,7 @@ public class StateData {
 	 */
 	public IParkourState getState() {
 		if (this.cachedState == null) {
-			this.cachedState = PkRegistries.PARKOUR_REGISTRY.get(this.stateId);
+			this.cachedState = PkRegistries.PARKOUR_STATE_REGISTRY.get(this.stateId);
 			if (this.cachedState == null) {
 				this.cachedState = PkParkourStates.DEFAULT.get();
 			}
@@ -61,7 +58,7 @@ public class StateData {
 	 */
 	public void setState(IParkourState newState) {
 		this.cachedState = newState;
-		ResourceLocation key = PkRegistries.PARKOUR_REGISTRY.getKey(newState);
+		ResourceLocation key = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(newState);
 		this.stateId = key != null ? key : PkParkourStates.DEFAULT.getId();
 	}
 

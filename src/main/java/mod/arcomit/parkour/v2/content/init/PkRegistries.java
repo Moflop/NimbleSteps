@@ -19,7 +19,7 @@ public class PkRegistries {
 
 	// 跑酷状态注册表
 	private static final ResourceKey<Registry<IParkourState>> PARKOUR_STATE_REGISTRY_KEY	= ResourceKey.createRegistryKey(ParkourMod.prefix("parkour_state"));
-	public static final Registry<IParkourState>		  PARKOUR_REGISTRY 		= new RegistryBuilder<>(PARKOUR_STATE_REGISTRY_KEY)
+	public static final Registry<IParkourState> PARKOUR_STATE_REGISTRY = new RegistryBuilder<>(PARKOUR_STATE_REGISTRY_KEY)
 		.sync      (true)
 		.defaultKey(ParkourMod.prefix("default"))
 		.create    ();
@@ -27,6 +27,6 @@ public class PkRegistries {
 	// 注册注册表
 	@SubscribeEvent
 	public static void registerRegistries(NewRegistryEvent event) {
-		event.register(PARKOUR_REGISTRY);
+		event.register(PARKOUR_STATE_REGISTRY);
 	}
 }

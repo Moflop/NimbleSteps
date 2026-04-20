@@ -2,8 +2,10 @@ package mod.arcomit.parkour.v2.content.handler;
 
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.core.context.GroundData;
+import mod.arcomit.parkour.v2.core.context.JumpData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.SwimData;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -19,7 +21,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public class TimerHandler {
 
 	@SubscribeEvent
-	public static void tickCooldownTimers(PlayerTickEvent.Post event) {
+	public static void tickTimers(PlayerTickEvent.Post event) {
 		Player player = event.getEntity();
 		ParkourContext context = ParkourContext.get(player);
 		GroundData groundData = context.groundData();
@@ -36,5 +38,16 @@ public class TimerHandler {
 		// 水中推进冷却
 		int swimmingBoostCooldown = swimData.getSwimmingBoostCooldown();
 		if (swimmingBoostCooldown > 0) swimData.setSwimmingBoostCooldown(swimmingBoostCooldown - 1);
+
+		// 距离上一次跳跃的Tick
+		if (player instanceof LocalPlayer) {
+			JumpData jumpData = ParkourContext.get(player).jumpData();
+			int ticksSinceLastJump = jumpData.getTicksSinceLastJump();
+			if (ticksSinceLastJump < 100) {// 最多记录到100tick(5s)
+				jumpData.setTicksSinceLastJump(ticksSinceLastJump + 1);
+			}
+		}
 	}
+
+
 }

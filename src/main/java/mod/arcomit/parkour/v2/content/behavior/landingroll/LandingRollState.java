@@ -62,10 +62,6 @@ public class LandingRollState extends AbstractParkourState {
 				PlayerAnimationManager.playOneOffAnimation(
 					(AbstractClientPlayer) player, PkPlayerAnimations.LANDING_ROLL.id, false
 				);
-
-				PacketDistributor.sendToServer(
-					new RequestPlayActionC2SPayload(PkPlayerAnimations.LANDING_ROLL.id, false)
-				);
 			}
 
 			Minecraft.getInstance().getSoundManager().play(

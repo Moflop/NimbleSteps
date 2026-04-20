@@ -21,7 +21,7 @@ public class HeadWallSensor extends AbstractBoxSensor {
 	private static final double COLLISION_CHECK_DISTANCE = 0.15;  // 墙面碰撞检测距离
 
 	public HeadWallSensor(Direction direction) {
-		super("head_wall" + direction.getName());
+		super("head_wall_" + direction.getName());
 		this.direction = direction;
 	}
 

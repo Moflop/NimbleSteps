@@ -8,7 +8,7 @@ import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
 import mod.arcomit.parkour.v2.core.statemachine.network.BroadcastStateChangeS2CPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.RequestStateTransitionC2SPayload;
-import mod.arcomit.parkour.v2.core.statemachine.network.SyncLocalPlayerStateS2CPayload;
+import mod.arcomit.parkour.v2.core.statemachine.network.ForceLocalPlayerStateS2CPayload;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
 import net.minecraft.client.player.LocalPlayer;
@@ -18,8 +18,10 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 跑酷状态机。
@@ -56,7 +58,7 @@ public class ParkourStateMachine {
 			}
 
 			if (player.level().isClientSide()) {
-				PlayerAnimationManager.syncStateAnimation(player);
+				PlayerAnimationManager.playStateAnimation(player);
 			}
 		}
 
@@ -81,12 +83,10 @@ public class ParkourStateMachine {
 				if (defaultState.isValid(player)) {
 					transitionTo(player, defaultState);
 
-					ResourceLocation defaultId = PkRegistries.PARKOUR_REGISTRY.getKey(defaultState);
+					ResourceLocation defaultId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(defaultState);
 					if (defaultId != null) {
 						PacketDistributor.sendToPlayer((ServerPlayer) player,
-							new SyncLocalPlayerStateS2CPayload(defaultId, 0));
-						PacketDistributor.sendToPlayersTrackingEntity(player,
-							new BroadcastStateChangeS2CPayload(player.getId(), defaultId, 0));
+							new ForceLocalPlayerStateS2CPayload(defaultId, IParkourState.DEFAULT_ANIM_VARIANT));
 					}
 				}
 			}
@@ -104,17 +104,22 @@ public class ParkourStateMachine {
 	 */
 	private static void tryTickTransition(Player player, IParkourState currentState) {
 		List<IParkourStateTransition> transitions = currentState.getTransitions();
-		for (int i = 0; i < transitions.size(); i++) {
-			IParkourStateTransition transition = transitions.get(i);
+		for (IParkourStateTransition transition : transitions) {
 			if (transition.shouldTransitionOnTick(player)) {
-				IParkourState targetState = transition.getTargetState();
 				transitionTo(player, transition.getTargetState());
-				if (!player.level().isClientSide()){
-					ResourceLocation stateId = PkRegistries.PARKOUR_REGISTRY.getKey(targetState);
-					int animVariant = ParkourContext.get(player).stateData().getAnimVariant();
-					PacketDistributor.sendToPlayersTrackingEntity(player,
-						new BroadcastStateChangeS2CPayload(player.getId(), stateId, animVariant));
-				}
+				return;
+			}
+		}
+	}
+
+	public static void tryFallTransition(Player player, LivingFallEvent event) {
+		StateData stateData = ParkourContext.get(player).stateData();
+		IParkourState currentState = stateData.getState();
+		List<IParkourStateTransition> transitions = currentState.getTransitions();
+		for (IParkourStateTransition transition : transitions) {
+			if (transition.shouldTransitionOnFall(player, event)) {
+				IParkourState targetState = transition.getTargetState();
+				transitionTo(player, targetState);
 				return;
 			}
 		}
@@ -135,30 +140,9 @@ public class ParkourStateMachine {
 			return;
 		}
 		List<IParkourStateTransition> transitions = currentState.getTransitions();
-		for (int i = 0; i < transitions.size(); i++) {
-			IParkourStateTransition transition = transitions.get(i);
+		for (IParkourStateTransition transition : transitions) {
 			if (transition.shouldTransitionOnLocalTick(player)) {
 				localTransitionTo(player, transition.getTargetState());
-				return;
-			}
-		}
-	}
-
-	public static void tryFallTransition(Player player, LivingFallEvent event) {
-		StateData stateData = ParkourContext.get(player).stateData();
-		IParkourState currentState = stateData.getState();
-		List<IParkourStateTransition> transitions = currentState.getTransitions();
-		for (int i = 0; i < transitions.size(); i++) {
-			IParkourStateTransition transition = transitions.get(i);
-			if (transition.shouldTransitionOnFall(player, event)) {
-				IParkourState targetState = transition.getTargetState();
-				transitionTo(player, targetState);
-				if (!player.level().isClientSide()) {
-					ResourceLocation stateId = PkRegistries.PARKOUR_REGISTRY.getKey(targetState);
-					int animVariant = ParkourContext.get(player).stateData().getAnimVariant();
-					PacketDistributor.sendToPlayersTrackingEntity(player,
-						new BroadcastStateChangeS2CPayload(player.getId(), stateId, animVariant));
-				}
 				return;
 			}
 		}
@@ -181,8 +165,7 @@ public class ParkourStateMachine {
 		StateData stateData = ParkourContext.get(player).stateData();
 		IParkourState currentState = stateData.getState();
 		List<IParkourStateTransition> transitions = currentState.getTransitions();
-		for (int i = 0; i < transitions.size(); i++) {
-			IParkourStateTransition transition = transitions.get(i);
+		for (IParkourStateTransition transition : transitions) {
 			if (transition.shouldTransitionOnInput(player, keyMapping)) {
 				localTransitionTo(player, transition.getTargetState());
 				return;
@@ -191,9 +174,9 @@ public class ParkourStateMachine {
 	}
 
 	/**
-	 * 客户端预测状态转换逻辑（使用默认动画变体 0）。
-	 * 执行本地状态转换，并向服务端发送数据包请求同步。
-	 * @param player	  需要转换状态的本地玩家。
+	 * 客户端预测状态转换逻辑（使用状态生成的动画变体）。
+	 * 执行本地状态转换，并向服务端发送数据包请求服务端也进行状态转换。
+	 * @param player 需要转换状态的本地玩家。
 	 * @param targetState 目标状态。
 	 */
 	public static void localTransitionTo(LocalPlayer player, IParkourState targetState) {
@@ -202,27 +185,24 @@ public class ParkourStateMachine {
 	}
 
 	/**
-	 * 客户端预测状态转换逻辑。
-	 * 执行本地状态转换，并向服务端发送数据包（{@link RequestStateTransitionC2SPayload}）请求同步。
-	 * @param player	  需要转换状态的本地玩家。
+	 * 客户端预测的状态转换执行方法。
+	 * 执行本地状态转换，并向服务端发送数据包（{@link RequestStateTransitionC2SPayload}）请求服务端也进行状态转换。
+	 * @param player 需要转换状态的本地玩家。
 	 * @param targetState 目标状态。
 	 * @param animVariant 动画变体 ID。
 	 */
 	public static void localTransitionTo(LocalPlayer player, IParkourState targetState, int animVariant) {
-		if (!player.isLocalPlayer()) {
-			return;
-		}
 		transitionTo(player, targetState, animVariant);
 
 		// 发包请求服务端进行状态转换验证并广播
-		ResourceLocation targetId = PkRegistries.PARKOUR_REGISTRY.getKey(targetState);
-		if (targetId != null) {
- 			PacketDistributor.sendToServer(new RequestStateTransitionC2SPayload(targetId, animVariant));
+		ResourceLocation targetStateId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(targetState);
+		if (targetStateId != null) {
+ 			PacketDistributor.sendToServer(new RequestStateTransitionC2SPayload(targetStateId, animVariant));
 		}
 	}
 
 	/**
-	 * 双端通用的核心状态转换执行方法（使用默认动画变体 0）。
+	 * 双端通用的核心状态转换执行方法（使用状态生成的动画变体）。
 	 * @param player 	  需要转换状态的玩家。
 	 * @param targetState 目标状态。
 	 */
@@ -232,14 +212,13 @@ public class ParkourStateMachine {
 	}
 
 	/**
-	 * 双端通用的核心状态转换执行方法。
-	 * 负责触发状态的退出与进入生命周期钩子（{@code onExit} / {@code onEnter}），并处理物理碰撞箱的形变刷新。
+	 * 最基层的核心状态转换执行方法。
+	 * 负责触发状态的退出与进入生命周期钩子（{@code onExit} / {@code onEnter}），并处理姿势转换，物理碰撞箱的形变刷新，播放当前状态的动画以及服务端广播状态转换到其它客户端。
 	 * @param player 	  需要转换状态的玩家。
 	 * @param targetState 目标状态。
 	 * @param animVariant 动画变体 ID。
 	 */
-	public static void transitionTo(Player player, IParkourState targetState, int animVariant) {
-		System.out.println((player.level().isClientSide ? "[Client]" : "[Server]") +" Transitioning player: " + player.getName().getString() + " state: " + targetState.getClass().getSimpleName() + " anim variant: " + animVariant);
+	public static void transitionTo(@NotNull Player player, @NotNull IParkourState targetState, int animVariant) {
 		StateData stateData = ParkourContext.get(player).stateData();
 		IParkourState currentState = stateData.getState();
 
@@ -251,52 +230,45 @@ public class ParkourStateMachine {
 		stateData.setTicksInState(0);
 		stateData.setAnimVariant(animVariant);
 
-		if (targetState != null) {
-			targetState.onEnter(player);
-		}
+		targetState.onEnter(player);
 
 		stateData.setLastTickState(currentState);
 		player.setForcedPose(targetState.getLinkedPose());
 		player.updatePlayerPose();
 
 		EntityDimensions currentDim = currentState != null ? currentState.getCustomDimensions(player) : null;
-		EntityDimensions targetDim = targetState != null ? targetState.getCustomDimensions(player) : null;
+		EntityDimensions targetDim = targetState.getCustomDimensions(player);
 
-		// 如果前后两个状态对尺寸的要求不一样，说明发生了形变，自动触发刷新
-		// （如果两个状态的尺寸要求相同，或者都为 null，则不浪费性能去刷新碰撞箱）
-		if (currentDim != targetDim) {
+		// 如果两个状态的尺寸要求相同，或者都为 null，则不浪费性能去刷新碰撞箱
+		if (!Objects.equals(currentDim, targetDim)) {
 			player.refreshDimensions();
 		}
 
 		if (player.level().isClientSide()) {
-			PlayerAnimationManager.syncStateAnimation(player);
+			PlayerAnimationManager.playStateAnimation(player);
+		}else {
+			ResourceLocation targetStateId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(targetState);
+			PacketDistributor.sendToPlayersTrackingEntity(player,
+				new BroadcastStateChangeS2CPayload(player.getId(), targetStateId, animVariant)
+			);
 		}
 	}
 
 	/**
-	 * 重置玩家的跑酷状态。
-	 * 通常用于强制中断跑酷动作时的清理操作（如跨越维度）。
+	 * 跨越维度时重置玩家的跑酷状态。
 	 * @param player 需要重置状态的玩家。
 	 */
-	public static void resetState(Player player) {
+	public static void resetState(@NotNull ServerPlayer player) {
 		StateData stateData = ParkourContext.get(player).stateData();
 		IParkourState defaultState = PkParkourStates.DEFAULT.get();
-
 		if (stateData.getState() != defaultState) {
 			transitionTo(player, defaultState);
-
-			if (!player.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
-				ResourceLocation defaultId = PkRegistries.PARKOUR_REGISTRY.getKey(defaultState);
-				if (defaultId != null) {
-					// 同步玩家本人的客户端
-					PacketDistributor.sendToPlayer(
-						serverPlayer, new SyncLocalPlayerStateS2CPayload(defaultId, 0)
-					);
-					// 广播周围观察者的客户端
-					PacketDistributor.sendToPlayersTrackingEntity(
-						player, new BroadcastStateChangeS2CPayload(player.getId(), defaultId, 0)
-					);
-				}
+			ResourceLocation defaultId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(defaultState);
+			if (defaultId != null) {
+				// 同步玩家本人的客户端
+				PacketDistributor.sendToPlayer(
+					player, new ForceLocalPlayerStateS2CPayload(defaultId, IParkourState.DEFAULT_ANIM_VARIANT)
+				);
 			}
 		}
 	}

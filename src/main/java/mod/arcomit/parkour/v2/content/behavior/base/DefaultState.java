@@ -1,20 +1,16 @@
 package mod.arcomit.parkour.v2.content.behavior.base;
 
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
+import mod.arcomit.parkour.v2.content.behavior.wallclimb.WallClimbState;
+import mod.arcomit.parkour.v2.content.behavior.wallrun.WallRunState;
 import mod.arcomit.parkour.v2.content.client.NsKeyBindings;
-import mod.arcomit.parkour.v2.content.client.NsKeyMapping;
 import mod.arcomit.parkour.v2.content.init.PkParkourStates;
-import mod.arcomit.parkour.v2.core.context.GroundData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.statemachine.state.AbstractParkourState;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
-import net.minecraft.client.player.Input;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
-
-import java.util.List;
 
 /**
  * 默认状态
@@ -68,7 +64,25 @@ public class DefaultState extends AbstractParkourState {
 				}
 			},
 
-			// 5. 在空中下落，贴近墙壁并按住跳跃键 -> 进入滑墙
+			// 5. 在空中下落，靠近墙壁，已经跳跃了至少15tick，有向前冲量并且按住跳跃键 -> 进入墙跑
+			// 注意：放在滑墙之前，作为高优先级判定
+			IParkourStateTransition.onLocalTick(
+				PkParkourStates.WALL_RUN::get,
+				player -> player.input.jumping
+					&& ParkourContext.get(player).jumpData().getTicksSinceLastJump() <= WallRunState.MAX_TICKS_SINCE_JUMP
+					&& player.input.forwardImpulse > WallRunState.ZERO_THRESHOLD
+					&& PkParkourStates.WALL_RUN.get().canEnter(player)
+			),
+
+			IParkourStateTransition.onLocalTick(
+				PkParkourStates.WALL_CLIMB::get,
+				player -> player.input.jumping
+					&& ParkourContext.get(player).jumpData().getTicksSinceLastJump() <= WallClimbState.MAX_TICKS_SINCE_JUMP
+					&& player.input.forwardImpulse > WallClimbState.ZERO_THRESHOLD
+					&& PkParkourStates.WALL_CLIMB.get().canEnter(player)
+			),
+
+			// 6. 在空中下落，贴近墙壁并按住跳跃键 -> 进入滑墙
 			IParkourStateTransition.onLocalTick(
 				PkParkourStates.WALL_SLIDE::get,
 				player -> player.input.jumping && PkParkourStates.WALL_SLIDE.get().canEnter(player)

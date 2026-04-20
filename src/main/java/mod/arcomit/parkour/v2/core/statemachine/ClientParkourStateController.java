@@ -17,7 +17,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
  */
 @OnlyIn(Dist.CLIENT)
 @EventBusSubscriber(modid = ParkourMod.MODID)
-public class ClientParkourController {
+public class ClientParkourStateController {
 
 	@SubscribeEvent
 	public static void onKeyJustPressed(InputJustPressedEvent event) {

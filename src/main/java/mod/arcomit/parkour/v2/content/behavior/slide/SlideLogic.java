@@ -18,7 +18,6 @@ public class SlideLogic {
 	public static void applySlidePhysics(Player player) {
 		GroundData groundData = ParkourContext.get(player).groundData();
 		groundData.setSlideCooldown(ServerConfig.slideCooldown);
-		player.resetFallDistance();
 
 		if (player instanceof LocalPlayer localPlayer) {
 			Input playerInput = localPlayer.input;

@@ -45,7 +45,7 @@ public record BroadcastStateChangeS2CPayload(int entityId, ResourceLocation stat
 				Entity entity = level.getEntity(packet.entityId());
 				// 本地玩家(LocalPlayer)已经通过预测切换了状态，只处理远程玩家(RemotePlayer)
 				if (entity != null && entity instanceof Player player && !player.isLocalPlayer()) {
-					IParkourState newState = PkRegistries.PARKOUR_REGISTRY.get(packet.stateId());
+					IParkourState newState = PkRegistries.PARKOUR_STATE_REGISTRY.get(packet.stateId());
 					if (newState != null) {
 						ParkourStateMachine.transitionTo(player, newState, packet.animVariant());
 					}

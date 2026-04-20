@@ -78,14 +78,12 @@ public class ProceduralLandingRollModifier extends AbstractModifier {
 
 			float targetRotX = pitch * ((float) Math.PI / 180f);
 			float targetRotY = netYaw * ((float) Math.PI / 180f);
-
-			// 原版站立/跑步时头部的 Z 轴倾斜是 0
 			float targetRotZ = 0f;
 
-			// 在 JSON 动画的当前角度和原版角度之间进行丝滑插值
-			bone.rotX = Mth.lerp(vanillaWeight, bone.rotX, targetRotX);
-			bone.rotY = Mth.lerp(vanillaWeight, bone.rotY, targetRotY);
-			bone.rotZ = Mth.lerp(vanillaWeight, bone.rotZ, targetRotZ);
+			// 使用自定义的最短路径弧度插值
+			bone.rotX = rotLerpRadians(vanillaWeight, bone.rotX, targetRotX);
+			bone.rotY = rotLerpRadians(vanillaWeight, bone.rotY, targetRotY);
+			bone.rotZ = rotLerpRadians(vanillaWeight, bone.rotZ, targetRotZ);
 		}
 
 		// ==========================================
@@ -119,5 +117,22 @@ public class ProceduralLandingRollModifier extends AbstractModifier {
 		}
 
 		return bone;
+	}
+
+	/**
+	 * 弧度的最短路径插值，确保旋转差值限制在 -π 到 π 之间（即 -180 到 180 度）
+	 */
+	private float rotLerpRadians(float delta, float start, float end) {
+		float diff = end - start;
+
+		// 将差值规范化到 -PI 到 PI 的范围内
+		while (diff < -(float)Math.PI) {
+			diff += (float)Math.PI * 2f;
+		}
+		while (diff >= (float)Math.PI) {
+			diff -= (float)Math.PI * 2f;
+		}
+
+		return start + delta * diff;
 	}
 }

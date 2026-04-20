@@ -7,6 +7,7 @@ import com.zigythebird.playeranimcore.animation.layered.modifier.AbstractModifie
 import com.zigythebird.playeranimcore.enums.PlayState;
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.content.init.PkRegistries;
+import mod.arcomit.parkour.v2.core.animation.player.network.RequestPlayActionC2SPayload;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
@@ -19,6 +20,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +55,7 @@ public class PlayerAnimationManager {
 	 *
 	 * @param player        目标玩家
 	 * @param animationId     要播放的动作ID
-	 * @param interruptible 是否会被状态改变（如落地、跳跃）打断
+	 * @param interruptible 是否会被无动画的状态打断
 	 */
 	public static void playOneOffAnimation(AbstractClientPlayer player, ResourceLocation animationId, boolean interruptible) {
 		PlayerAnimManager manager = PlayerAnimationAccess.getPlayerAnimManager(player);
@@ -77,12 +79,16 @@ public class PlayerAnimationManager {
 		newActionController.triggerAnimation(animationId, 0);
 		manager.addAnimLayer(PARKOUR_ACTION_LAYER_ID, newActionController);
 		ACTION_INTERRUPTIBLE.put(uuid, interruptible);
+
+		if (player.isLocalPlayer()) {
+			PacketDistributor.sendToServer(new RequestPlayActionC2SPayload(animationId, interruptible));
+		}
 	}
 
 	/**
-	 * 由状态机每 Tick 触发，同步常驻状态的动画
+	 * 播放当前状态的动画
 	 */
-	public static void syncStateAnimation(Player player) {
+	public static void playStateAnimation(Player player) {
 		if (!(player instanceof AbstractClientPlayer clientPlayer)) {
 			return;
 		}
@@ -96,20 +102,28 @@ public class PlayerAnimationManager {
 
 		UUID uuid = player.getUUID();
 
-		// 处理高层级一次性动画的打断判定
+		// 1. 将获取目标状态动画的逻辑提前，因为打断逻辑需要用到它
+		ResourceLocation stateId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(currentState);
+		PlayerAnimation targetAnim = ClientAnimationRegistry.getAnimation(stateId, stateData.getAnimVariant());
+
+		// 2. 处理高层级一次性动画的打断判定
 		if (ACTION_CONTROLLERS.containsKey(uuid)) {
 			PlayerAnimationController actionController = ACTION_CONTROLLERS.get(uuid);
-			if (actionController.isActive() && ACTION_INTERRUPTIBLE.getOrDefault(uuid, true)) {
-				actionController.stop();
+			if (actionController.isActive()) {
+				// 新逻辑：
+				// targetAnim != null 代表新状态有专属动画，强制打断一次性动作以让位给状态动画
+				// 如果 targetAnim 为 null，则根据 interruptible 标志位决定是否被无动画的状态打断
+				boolean interruptible = ACTION_INTERRUPTIBLE.getOrDefault(uuid, true);
+				if (targetAnim != null || interruptible) {
+					actionController.stop();
+				}
 			}
 		}
-
-		ResourceLocation stateId = PkRegistries.PARKOUR_REGISTRY.getKey(currentState);
-		PlayerAnimation targetAnim = ClientAnimationRegistry.getAnimation(stateId, stateData.getAnimVariant());
 
 		PlayerAnimationController stateController = getOrCreateStateController(clientPlayer);
 		PlayerAnimManager manager = PlayerAnimationAccess.getPlayerAnimManager(clientPlayer);
 
+		// 3. 处理后续的状态动画播放逻辑
 		if (targetAnim != null) {
 			stateController.removeAllModifiers();
 

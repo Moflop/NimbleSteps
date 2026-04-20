@@ -31,7 +31,7 @@ public record BroadcastPlayActionS2CPayload(int entityId, ResourceLocation actio
 			ClientLevel level = Minecraft.getInstance().level;
 			if (level != null) {
 				Entity entity = level.getEntity(packet.entityId());
-				// 确保实体是客户端玩家，并且【不是本地玩家自己】（因为自己早就预测播放过了）
+				// 确保实体是客户端玩家，并且不是本地玩家自己（因为自己早就预测播放过了）
 				if (entity instanceof AbstractClientPlayer player && !player.isLocalPlayer()) {
 					PlayerAnimationManager.playOneOffAnimation(player, packet.actionId(), packet.interruptible());
 				}

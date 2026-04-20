@@ -25,7 +25,7 @@ public class WallSlideState extends AbstractParkourState {
 	 */
 	private boolean isGracePeriodOver(LocalPlayer player) {
 		ParkourContext context = ParkourContext.get(player);
-		return !player.input.jumping && context.wallData().getWallSlideJumpReleaseGraceTicks() <= 0;
+		return !player.input.jumping && context.wallData().getJumpReleaseGraceTicks() <= 0;
 	}
 
 	public WallSlideState() {
@@ -46,7 +46,7 @@ public class WallSlideState extends AbstractParkourState {
 		WallData wallData = ParkourContext.get(player).wallData();
 
 		if (player instanceof LocalPlayer localPlayer) {
-			wallData.setWallSlideJumpReleaseGraceTicks(WALL_SLIDE_GRACE_PERIOD);
+			wallData.setJumpReleaseGraceTicks(WALL_SLIDE_GRACE_PERIOD);
 			localPlayer.sendPosition();// 防止服务端位置没及时同步导致贴墙检测失效状态回拉
 		}
 	}
@@ -64,10 +64,9 @@ public class WallSlideState extends AbstractParkourState {
 	@Override
 	public void onExit(Player player) {
 		WallData wallData = ParkourContext.get(player).wallData();
-
 		wallData.setWallSlideDirection(-1);
 		if (player instanceof LocalPlayer) {
-			wallData.setWallSlideJumpReleaseGraceTicks(0);
+			wallData.setJumpReleaseGraceTicks(0);
 		}
 	}
 
@@ -76,11 +75,11 @@ public class WallSlideState extends AbstractParkourState {
 		WallData wallData = ParkourContext.get(player).wallData();
 		if (player.input.jumping) {
 			// 如果一直按着跳跃键，重置宽限期
-			wallData.setWallSlideJumpReleaseGraceTicks(WALL_SLIDE_GRACE_PERIOD);
+			wallData.setJumpReleaseGraceTicks(WALL_SLIDE_GRACE_PERIOD);
 		}else {
-			int grace = wallData.getWallSlideJumpReleaseGraceTicks();
+			int grace = wallData.getJumpReleaseGraceTicks();
 			if (grace > 0) {
-				wallData.setWallSlideJumpReleaseGraceTicks(grace - 1);
+				wallData.setJumpReleaseGraceTicks(grace - 1);
 			}
 		}
 	}
