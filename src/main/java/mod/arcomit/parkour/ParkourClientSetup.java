@@ -54,12 +54,12 @@ public class ParkourClientSetup {
 				variant -> PkPlayerAnimations.WALL_CLIMB
 			);
 			// 绑定程序化修改器
-//			ClientAnimationRegistry.registerModifierFactory(
-//				PkParkourStates.WALL_CLIMB.getId(),
-//				(controller, player, state, variant) -> {
-//					controller.addModifierLast(new AdaptiveClimbSpeedModifier(player));
-//				}
-//			);
+			ClientAnimationRegistry.registerModifierFactory(
+				PkParkourStates.WALL_CLIMB.getId(),
+				(controller, player, state, variant) -> {
+					controller.addModifierLast(new AdaptiveClimbSpeedModifier(player));
+				}
+			);
 
 			ClientAnimationRegistry.registerActionModifier(PkPlayerAnimations.LANDING_ROLL.id, player -> {
 				// 指定 16 Tick 总长，最后 6 Tick 过度融合原版

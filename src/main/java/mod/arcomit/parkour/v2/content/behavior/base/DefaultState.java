@@ -27,6 +27,7 @@ public class DefaultState extends AbstractParkourState {
 				PkParkourStates.CRAWL::get,
 				NsKeyBindings.SLIDE_KEY,
 				player -> !PlayerStateUtils.isPlayerMoving(player)
+					&& PkParkourStates.CRAWL.get().canEnter(player)
 			),
 
 			// 2. 移动中（且向前）按滑铲键 -> 滑铲

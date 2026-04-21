@@ -2,23 +2,27 @@ package mod.arcomit.parkour.v2.content.client.animation.player.modifier;
 
 import com.zigythebird.playeranimcore.animation.AnimationData;
 import com.zigythebird.playeranimcore.animation.layered.modifier.AbstractModifier;
+import com.zigythebird.playeranimcore.bones.PlayerAnimBone;
 import mod.arcomit.parkour.ServerConfig;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 
 @OnlyIn(Dist.CLIENT)
 public class AdaptiveClimbSpeedModifier extends AbstractModifier {
 
 	private final Player player;
 
-	// 你制作动画时的基准速度：1 tick 0.2格
 	private final float baseSpeedPerTick = 0.2f;
 	private float speed = 1.0f;
 
-	// 采用官方的时间累加概念，但进行彻底的安全隔离
 	private float delta = 0.0F;
 	private float shiftedDelta = 0.0F;
+
+	// 只保留这一个变量，用来精准计算原版引擎的渲染时间
+	private float renderPartialTick = 0f;
 
 	public AdaptiveClimbSpeedModifier(Player player) {
 		this.player = player;
@@ -26,26 +30,26 @@ public class AdaptiveClimbSpeedModifier extends AbstractModifier {
 
 	@Override
 	public void tick(AnimationData state) {
-		// 动态计算爬墙速度
 		double dy = this.player.getY() - this.player.yo;
 		if (dy > 0.01 || dy < -0.01) {
 			float currentWallClimbSpeed = ServerConfig.WALL_CLIMB_SPEED.get().floatValue();
 			this.speed = currentWallClimbSpeed / baseSpeedPerTick;
 		} else {
-			this.speed = 0f; // 停在墙上时冻结动画
+			this.speed = 0f;
 		}
 
 		float d = 1.0F - this.delta;
 		this.delta = 0.0F;
-		// 传入 true，代表这是逻辑 tick，绝对禁止触发渲染代码
 		this.step(d, state, true);
 	}
 
 	@Override
 	public void setupAnim(AnimationData state) {
+		// 记录真实的渲染插值时间
+		this.renderPartialTick = state.getPartialTick();
+
 		float d = state.getPartialTick() - this.delta;
 		this.delta = state.getPartialTick();
-		// 传入 false，代表这是渲染帧，允许更新骨骼
 		this.step(d, state, false);
 	}
 
@@ -53,27 +57,44 @@ public class AdaptiveClimbSpeedModifier extends AbstractModifier {
 		stepDelta *= this.speed;
 		stepDelta += this.shiftedDelta;
 
-		// 【核心修复 1】保护现场：记录下真正的 PartialTick！
 		float originalPartialTick = state.getPartialTick();
 
-		// 正常处理时间溢出，向下传递 tick
 		while (stepDelta > 1.0F) {
 			--stepDelta;
 			super.tick(state);
 		}
 
-		// 设置为我们伪造的变速时间，让子动画能正确变形
 		state.setPartialTick(stepDelta);
 
-		// 【核心修复 2】绝不在逻辑 Tick() 中调用渲染代码！杜绝跨线程污染！
 		if (!isTick) {
 			super.setupAnim(state);
 		}
 
-		// 【核心修复 3】恢复现场：强行把原版的 PartialTick 塞回去！
-		// 这样排在这个 Modifier 之后的所有动画和过程化代码，都能拿到绝对精准的渲染时间！
 		state.setPartialTick(originalPartialTick);
-
 		this.shiftedDelta = stepDelta;
+	}
+
+	// ================= 极简版：根据 getDirection() 锁死身体 =================
+	@Override
+	public PlayerAnimBone get3DTransform(@NotNull PlayerAnimBone bone) {
+		bone = super.get3DTransform(bone);
+		String boneName = bone.getName();
+
+		// 我们只关心需要旋转的身体和头部
+		if (boneName.equals("body")) {
+
+			// 1. 获取 Minecraft 引擎原本打算把身体转到的角度
+			float currentVanillaBodyYaw = Mth.lerp(this.renderPartialTick, this.player.yBodyRotO, this.player.yBodyRot);
+
+			// 2. 获取玩家绝对面朝方向（东南西北）对应的角度
+			float targetYaw = this.player.getDirection().toYRot();
+
+			// 3. 计算需要补偿的差值
+			float yawDiff = targetYaw - currentVanillaBodyYaw;
+
+			bone.rotY += yawDiff * Mth.DEG_TO_RAD;
+		}
+
+		return bone;
 	}
 }

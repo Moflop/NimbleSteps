@@ -2,6 +2,7 @@ package mod.arcomit.parkour.v2.content.behavior.crawl;
 
 import mod.arcomit.parkour.ServerConfig;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
+import mod.arcomit.parkour.v2.content.behavior.wallslide.WallSlideLogic;
 import mod.arcomit.parkour.v2.content.client.NsKeyBindings;
 import mod.arcomit.parkour.v2.content.client.NsKeyMapping;
 import mod.arcomit.parkour.v2.content.init.PkParkourStates;
@@ -37,11 +38,23 @@ public class CrawlState extends AbstractParkourState {
 		return Pose.SWIMMING;
 	}
 
-	@Override
-	public boolean isValid(Player player) {
+	/**
+	 * 验证玩家当前环境是否满足滑墙条件
+	 */
+	public static boolean isBaseValid(Player player) {
 		return ServerConfig.enableCrawl
 			&& !PlayerStateUtils.fallWillTakeDamage(player)
 			&& !player.isSwimming()
 			&& PlayerStateUtils.isAbleToAction(player);
+	}
+
+	@Override
+	public boolean canEnter(Player player) {
+		return isBaseValid(player);
+	}
+
+	@Override
+	public boolean isValid(Player player) {
+		return isBaseValid(player);
 	}
 }

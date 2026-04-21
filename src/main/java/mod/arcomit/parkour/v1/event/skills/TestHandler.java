@@ -41,7 +41,7 @@ public class TestHandler {
 		boolean hasMovementInput = Math.abs(player.xxa) > 0.001 || Math.abs(player. zza) > 0.001;
 
 		if (hasMovementInput) {
-			tryCustomStep(player);
+			//tryCustomStep(player);
 		}
 	}
 

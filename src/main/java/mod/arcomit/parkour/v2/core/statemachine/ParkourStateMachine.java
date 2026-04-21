@@ -252,6 +252,8 @@ public class ParkourStateMachine {
 				new BroadcastStateChangeS2CPayload(player.getId(), targetStateId, animVariant)
 			);
 		}
+
+		System.out.println("Player " + player.getName().getString() + " transitioned to state: " + targetState.getClass().getSimpleName() + " (Variant: " + animVariant + ")");
 	}
 
 	/**

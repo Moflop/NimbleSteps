@@ -134,6 +134,7 @@ public class PlayerAnimationManager {
 
 			int offsetTicks = stateData.getTicksInState();
 			stateController.triggerAnimation(targetAnim.id, offsetTicks);
+			manager.removeLayer(PARKOUR_STATE_LAYER_ID);
 			manager.addAnimLayer(PARKOUR_STATE_LAYER_ID, stateController);
 		} else {
 			stateController.stop();

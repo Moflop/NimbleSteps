@@ -3,6 +3,7 @@ package mod.arcomit.parkour.v1.utils;
 import mod.arcomit.parkour.ServerConfig;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 
 /**
@@ -26,7 +27,8 @@ public class PlayerStateUtils {
 			&& !player.isSleeping()
 			&& !player.isAutoSpinAttack()
 			&& !player.isFallFlying()
-			&& !player.getAbilities().flying;
+			&& !player.getAbilities().flying
+			&& (player.getForcedPose() != null || player.getPose() != Pose.SWIMMING);
 	}
 
 	/**
