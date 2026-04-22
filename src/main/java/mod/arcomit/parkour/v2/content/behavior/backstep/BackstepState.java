@@ -2,6 +2,9 @@ package mod.arcomit.parkour.v2.content.behavior.backstep;
 
 import mod.arcomit.parkour.ServerConfig;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
+import mod.arcomit.parkour.v2.content.behavior.backstep.client.BackstepClientEffect;
+import mod.arcomit.parkour.v2.content.behavior.slide.SlideLogic;
+import mod.arcomit.parkour.v2.content.behavior.slide.client.SlideClientEffect;
 import mod.arcomit.parkour.v2.content.init.PkParkourStates;
 import mod.arcomit.parkour.v2.content.init.PkSounds;
 import mod.arcomit.parkour.v2.core.context.GroundData;
@@ -18,6 +21,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 /**
  * 后撤步状态，期间无敌。
@@ -39,53 +43,18 @@ public class BackstepState extends AbstractParkourState {
 	}
 
 	@Override
-	public void onEnter(Player player) {
-		GroundData groundData = ParkourContext.get(player).groundData();
-		groundData.setSlideCooldown(ServerConfig.slideCooldown);
-		player.resetFallDistance();
+	public void onEnter(Player player, ParkourContext context) {
+		super.onEnter(player, context);
+		SlideLogic.setCooldown(player, context);
+	}
 
-		if (player instanceof LocalPlayer localPlayer) {
-			Input playerInput = localPlayer.input;
-			float forwardImpulse = playerInput.forwardImpulse;
-			float leftImpulse = playerInput.leftImpulse;
-
-			float yRotRad = player.getYRot() * Mth.DEG_TO_RAD;
-
-			float sin = Mth.sin(yRotRad);
-			float cos = Mth.cos(yRotRad);
-
-			// 计算相对于视角的运动矢量
-			double motionX = leftImpulse * cos - forwardImpulse * sin;
-			double motionZ = forwardImpulse * cos + leftImpulse * sin;
-
-			Vec3 motion = new Vec3(motionX, 0, motionZ).normalize()
-				.scale(ServerConfig.slideBoostSpeed);
-			player.setDeltaMovement(
-				player.getDeltaMovement().add(motion)
-			);
-		}
-
-		Level level = player.level();
-		//TODO: 后撤步音效（待定）
-		if (level.isClientSide) {
-//			Minecraft.getInstance().getSoundManager().play(
-//				new EntityBoundSoundInstance(
-//					PkSounds.SLIDE.get(),
-//					SoundSource.PLAYERS,
-//					SLIDE_SOUND_VOLUME,
-//					SLIDE_SOUND_PITCH,
-//					player,
-//					player.getRandom().nextLong()));
-		} else {
-//			level.playSound(
-//				player,
-//				player.getX(),
-//				player.getY(),
-//				player.getZ(),
-//				PkSounds.SLIDE.get(),
-//				SoundSource.PLAYERS,
-//				SLIDE_SOUND_VOLUME,
-//				SLIDE_SOUND_PITCH);
+	@Override
+	public void onClientEnter(Player player, ParkourContext context) {
+		if (FMLEnvironment.dist.isClient()) {
+			BackstepClientEffect.playSound(player);
+			if (player.isLocalPlayer()) {
+				BackstepClientEffect.applyPhysicsAndSendPosition(player);
+			}
 		}
 	}
 

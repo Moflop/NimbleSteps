@@ -40,7 +40,8 @@ public class ParkourStateMachine {
 	 * @param player 正在更新状态的玩家。
 	 */
 	public static void tick(Player player) {
-		StateData stateData = ParkourContext.get(player).stateData();
+		ParkourContext context = ParkourContext.get(player);
+		StateData stateData = context.stateData();
 		IParkourState currentState = stateData.getState();
 
 		// 服务端自动同步的状态需刷新碰撞箱尺寸和动画
@@ -63,7 +64,7 @@ public class ParkourStateMachine {
 		}
 
 		stateData.setTicksInState(stateData.getTicksInState() + 1);
-		currentState.onTick(player);
+		currentState.onTick(player, context);
 
 		// 严禁客户端私自切断 RemotePlayer 的状态
 		// 只有服务端，或者客户端的本地玩家，才进行 Tick 级别的状态自动转换
@@ -219,18 +220,19 @@ public class ParkourStateMachine {
 	 * @param animVariant 动画变体 ID。
 	 */
 	public static void transitionTo(@NotNull Player player, @NotNull IParkourState targetState, int animVariant) {
-		StateData stateData = ParkourContext.get(player).stateData();
+		ParkourContext context = ParkourContext.get(player);
+		StateData stateData = context.stateData();
 		IParkourState currentState = stateData.getState();
 
 		if (currentState != null) {
-			currentState.onExit(player);
+			currentState.onExit(player, context);
 		}
 
 		stateData.setState(targetState);
 		stateData.setTicksInState(0);
 		stateData.setAnimVariant(animVariant);
 
-		targetState.onEnter(player);
+		targetState.onEnter(player, context);
 
 		stateData.setLastTickState(currentState);
 		player.setForcedPose(targetState.getLinkedPose());

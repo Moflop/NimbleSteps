@@ -49,8 +49,8 @@ public class WallRunState extends AbstractParkourState {
 	}
 
 	@Override
-	public void onEnter(Player player) {
-		WallData wallData = ParkourContext.get(player).wallData();
+	public void onEnter(Player player, ParkourContext context) {
+		WallData wallData = context.wallData();
 		wallData.setWallRunCount(wallData.getWallRunCount() + 1);
 
 		if (player instanceof LocalPlayer localPlayer) {
@@ -88,16 +88,16 @@ public class WallRunState extends AbstractParkourState {
 	}
 
 	@Override
-	public void onExit(Player player) {
-		WallData wallData = ParkourContext.get(player).wallData();
+	public void onExit(Player player, ParkourContext context) {
+		WallData wallData = context.wallData();
 		if (player instanceof LocalPlayer) {
 			wallData.setJumpReleaseGraceTicks(0);
 		}
 	}
 
 	@Override
-	public void onLocalPlayerTick(LocalPlayer player) {
-		WallData wallData = ParkourContext.get(player).wallData();
+	public void onLocalPlayerTick(LocalPlayer player, ParkourContext context) {
+		WallData wallData = context.wallData();
 		if (player.input.jumping) {
 			// 如果一直按着跳跃键，重置宽限期
 			wallData.setJumpReleaseGraceTicks(WALL_RUN_GRACE_PERIOD);

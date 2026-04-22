@@ -87,6 +87,11 @@ public class DefaultState extends AbstractParkourState {
 			IParkourStateTransition.onLocalTick(
 				PkParkourStates.WALL_SLIDE::get,
 				player -> player.input.jumping && PkParkourStates.WALL_SLIDE.get().canEnter(player)
+			),
+
+			IParkourStateTransition.onTick(
+				PkParkourStates.ARMHANG::get,
+				player -> PkParkourStates.ARMHANG.get().canEnter(player)
 			)
 		);
 	}

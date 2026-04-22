@@ -2,20 +2,17 @@ package mod.arcomit.parkour.v2.content.behavior.slide;
 
 import mod.arcomit.parkour.ServerConfig;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
+import mod.arcomit.parkour.v2.content.behavior.slide.client.SlideClientEffect;
 import mod.arcomit.parkour.v2.content.init.PkParkourStates;
-import mod.arcomit.parkour.v2.content.init.PkSounds;
 import mod.arcomit.parkour.v2.core.context.GroundData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
 import mod.arcomit.parkour.v2.core.statemachine.state.AbstractParkourState;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -27,8 +24,6 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class SlideState extends AbstractParkourState {
 	public static final int SLIDE_DURATION = 10;
-	private static final float SLIDE_SOUND_VOLUME = 1.0f;
-	private static final float SLIDE_SOUND_PITCH = 1.0f;
 
 	public SlideState() {
 		registerTransitions(
@@ -44,23 +39,18 @@ public class SlideState extends AbstractParkourState {
 	}
 
 	@Override
-	public void onEnter(Player player) {
-		SlideLogic.applySlidePhysics(player);
+	public void onEnter(Player player, ParkourContext context) {
+		super.onEnter(player, context);
+		SlideLogic.setCooldown(player, context);
+	}
 
-		Level level = player.level();
-		if (level.isClientSide) {
-			Minecraft.getInstance().getSoundManager().play(
-				new EntityBoundSoundInstance(
-					PkSounds.SLIDE.get(), SoundSource.PLAYERS,
-					SLIDE_SOUND_VOLUME, SLIDE_SOUND_PITCH, player, player.getRandom().nextLong()
-				)
-			);
-		} else {
-			level.playSound(
-				player, player.getX(), player.getY(), player.getZ(),
-				PkSounds.SLIDE.get(), SoundSource.PLAYERS,
-				SLIDE_SOUND_VOLUME, SLIDE_SOUND_PITCH
-			);
+	@Override
+	public void onClientEnter(Player player, ParkourContext context) {
+		if (FMLEnvironment.dist.isClient()) {
+			SlideClientEffect.playSound(player);
+			if (player.isLocalPlayer()) {
+				SlideClientEffect.applyPhysicsAndSendPosition(player);
+			}
 		}
 	}
 

@@ -1,8 +1,6 @@
 package mod.arcomit.parkour.v2.core.statemachine.state;
 
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.player.RemotePlayer;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -19,42 +17,78 @@ public interface IParkourState {
 	// 此处应用List.of
 	List<IParkourStateTransition> getTransitions();
 
-	default void onEnter(Player player) {}
+	default void onEnter(Player player, ParkourContext context) {
+		boolean isClient = player.level().isClientSide();
 
-	default void onExit(Player player) {}
-
-	default void onTick(Player player) {
-		if (player instanceof AbstractClientPlayer clientPlayer) {
-			onClientTick(clientPlayer);
+		if (isClient) {
 			if (player.isLocalPlayer()) {
-				onLocalPlayerTick((LocalPlayer) player);
-			} else {
-				onRemotePlayerTick((RemotePlayer) player);
+				onSimulationEnter(player, context);
 			}
+			onClientEnter(player, context);
+
 		} else {
-			onServerTick(player);
+			onSimulationEnter(player, context);
+			onServerEnter(player, context);
+		}
+	}
+
+	default  void onServerEnter(Player player, ParkourContext context) {}
+
+	default void onSimulationEnter(Player player, ParkourContext context) {}
+
+	default void onClientEnter(Player player, ParkourContext context) {}
+
+	default void onExit(Player player, ParkourContext context) {
+		boolean isClient = player.level().isClientSide();
+
+		if (isClient) {
+			if (player.isLocalPlayer()) {
+				onSimulationExit(player, context);
+			}
+			onClientExit(player, context);
+
+		} else {
+			onSimulationExit(player, context);
+			onServerExit(player, context);
+		}
+	}
+
+	default  void onServerExit(Player player, ParkourContext context) {}
+
+	default void onSimulationExit(Player player, ParkourContext context) {}
+
+	default void onClientExit(Player player, ParkourContext context) {}
+
+	default void onTick(Player player, ParkourContext context) {
+		boolean isClient = player.level().isClientSide();
+
+		if (isClient) {
+			if (player.isLocalPlayer()) {
+				onSimulationTick(player, context);
+			}
+			onClientTick(player, context);
+
+		} else {
+			onSimulationTick(player, context);
+			onServerTick(player, context);
 		}
 	}
 
 	/**
 	 * 服务端 Tick：处理权威的数值扣除、判定等
 	 */
-	default void onServerTick(Player player) {}
+	default void onServerTick(Player player, ParkourContext context) {}
 
 	/**
-	 * 客户端通用 Tick：处理所有玩家都能看到的表现（粒子、音效、动画状态）
+	 * 核心模拟 Tick：专用于物理移动、速度向量修改等需要【双端预测】的逻辑。
+	 * 该方法只会在 Server 和 LocalPlayer 上执行。
 	 */
-	default void onClientTick(AbstractClientPlayer player) {}
+	default void onSimulationTick(Player player, ParkourContext context) {}
 
 	/**
-	 * 客户端本地玩家 Tick：处理只有自己视角的表现（FOV变化、相机倾斜、屏幕抖动）
+	 * 客户端通用 Tick
 	 */
-	default void onLocalPlayerTick(LocalPlayer player) {}
-
-	/**
-	 * 客户端其他玩家 Tick：通常不需要重写，除非有极其特殊的剔除逻辑，需要排除自己
-	 */
-	default void onRemotePlayerTick(RemotePlayer player) {}
+	default void onClientTick(Player player, ParkourContext context) {}
 
 	/**
 	 * 用于服务端校验是否能进入该状态

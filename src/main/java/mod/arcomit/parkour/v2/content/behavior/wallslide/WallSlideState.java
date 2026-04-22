@@ -42,8 +42,8 @@ public class WallSlideState extends AbstractParkourState {
 	}
 
 	@Override
-	public void onEnter(Player player) {
-		WallData wallData = ParkourContext.get(player).wallData();
+	public void onEnter(Player player, ParkourContext context) {
+		WallData wallData = context.wallData();
 
 		if (player instanceof LocalPlayer localPlayer) {
 			wallData.setJumpReleaseGraceTicks(WALL_SLIDE_GRACE_PERIOD);
@@ -52,18 +52,17 @@ public class WallSlideState extends AbstractParkourState {
 	}
 
 	@Override
-	public void onTick(Player player) {
-		super.onTick(player);
+	public void onTick(Player player, ParkourContext context) {
+		super.onTick(player, context);
 		if (player instanceof RemotePlayer) return;
-		ParkourContext context = ParkourContext.get(player);
 		// 施加物理运动影响
 		WallSlideLogic.useWallSlideMovement(player, context);
 	}
 
 
 	@Override
-	public void onExit(Player player) {
-		WallData wallData = ParkourContext.get(player).wallData();
+	public void onExit(Player player, ParkourContext context) {
+		WallData wallData = context.wallData();
 		wallData.setWallSlideDirection(-1);
 		if (player instanceof LocalPlayer) {
 			wallData.setJumpReleaseGraceTicks(0);
@@ -71,8 +70,8 @@ public class WallSlideState extends AbstractParkourState {
 	}
 
 	@Override
-	public void onLocalPlayerTick(LocalPlayer player) {
-		WallData wallData = ParkourContext.get(player).wallData();
+	public void onLocalPlayerTick(LocalPlayer player, ParkourContext context) {
+		WallData wallData = context.wallData();
 		if (player.input.jumping) {
 			// 如果一直按着跳跃键，重置宽限期
 			wallData.setJumpReleaseGraceTicks(WALL_SLIDE_GRACE_PERIOD);

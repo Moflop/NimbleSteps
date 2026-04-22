@@ -13,20 +13,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record BroadcastPlayActionS2CPayload(int entityId, ResourceLocation actionId, boolean interruptible) implements CustomPacketPayload {
-	public static final Type<BroadcastPlayActionS2CPayload> TYPE = new Type<>(ParkourMod.prefix("broadcast_play_action"));
+public record BroadcastPlayOneOffAnimS2CPayload(int entityId, ResourceLocation actionId, boolean interruptible) implements CustomPacketPayload {
+	public static final Type<BroadcastPlayOneOffAnimS2CPayload> TYPE = new Type<>(ParkourMod.prefix("broadcast_play_action"));
 
-	public static final StreamCodec<FriendlyByteBuf, BroadcastPlayActionS2CPayload> STREAM_CODEC = StreamCodec.composite(
-		ByteBufCodecs.INT, BroadcastPlayActionS2CPayload::entityId,
-		ResourceLocation.STREAM_CODEC, BroadcastPlayActionS2CPayload::actionId,
-		ByteBufCodecs.BOOL, BroadcastPlayActionS2CPayload::interruptible,
-		BroadcastPlayActionS2CPayload::new
+	public static final StreamCodec<FriendlyByteBuf, BroadcastPlayOneOffAnimS2CPayload> STREAM_CODEC = StreamCodec.composite(
+		ByteBufCodecs.INT, BroadcastPlayOneOffAnimS2CPayload::entityId,
+		ResourceLocation.STREAM_CODEC, BroadcastPlayOneOffAnimS2CPayload::actionId,
+		ByteBufCodecs.BOOL, BroadcastPlayOneOffAnimS2CPayload::interruptible,
+		BroadcastPlayOneOffAnimS2CPayload::new
 	);
 
 	@Override
 	public Type<? extends CustomPacketPayload> type() { return TYPE; }
 
-	public static void handle(BroadcastPlayActionS2CPayload packet, IPayloadContext context) {
+	public static void handle(BroadcastPlayOneOffAnimS2CPayload packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			ClientLevel level = Minecraft.getInstance().level;
 			if (level != null) {

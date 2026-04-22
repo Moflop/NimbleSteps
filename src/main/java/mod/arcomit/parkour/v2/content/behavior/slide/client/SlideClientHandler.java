@@ -17,7 +17,6 @@ import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
  * @author Arcomit
  * @since 2026-03-10
  */
-@OnlyIn(Dist.CLIENT)
 @EventBusSubscriber(modid = ParkourMod.MODID, value = Dist.CLIENT)
 public class SlideClientHandler {
 

@@ -23,6 +23,18 @@ public class JumpStateHandler {
 		if (event.getEntity() instanceof LocalPlayer player) {
 			JumpData jumpData = ParkourContext.get(player).jumpData();
 			jumpData.setTicksSinceLastJump(0);
+			//TODO:优化改进
+			jumpData.setJumped(true);
+		}
+	}
+
+	//TODO:优化改进
+	@SubscribeEvent
+	public static void onPlayerTick(PlayerTickEvent.Post event) {
+		Player player = event.getEntity();
+		JumpData jumpData = ParkourContext.get(player).jumpData();
+		if (player.onGround() && jumpData.isJumped()) {
+			jumpData.setJumped(false);
 		}
 	}
 }

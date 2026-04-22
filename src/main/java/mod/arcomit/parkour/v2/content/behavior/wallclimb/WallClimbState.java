@@ -41,7 +41,7 @@ public class WallClimbState extends AbstractParkourState {
 	}
 
 	@Override
-	public void onEnter(Player player) {
+	public void onEnter(Player player, ParkourContext context) {
 		WallData wallData = ParkourContext.get(player).wallData();
 		wallData.setWallClimbed(true);
 
@@ -62,8 +62,8 @@ public class WallClimbState extends AbstractParkourState {
 	}
 
 	@Override
-	public void onExit(Player player) {
-		super.onExit(player);
+	public void onExit(Player player, ParkourContext context) {
+		super.onExit(player, context);
 		// 1. 获取当前系统时间
 		LocalDateTime now = LocalDateTime.now();
 

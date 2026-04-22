@@ -23,11 +23,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * @author Arcomit
  * @since 2026-03-10
  */
-@OnlyIn(Dist.CLIENT)
 @EventBusSubscriber(modid = ParkourMod.MODID, value = Dist.CLIENT)
 public class LandingRollClientHandler {
 
-	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public static void trySetLandingRollWindowOnInput(InputJustPressedEvent event) {
 		NsKeyMapping key = event.getKeyMapping();

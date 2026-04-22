@@ -7,7 +7,7 @@ import com.zigythebird.playeranimcore.animation.layered.modifier.AbstractModifie
 import com.zigythebird.playeranimcore.enums.PlayState;
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.content.init.PkRegistries;
-import mod.arcomit.parkour.v2.core.animation.player.network.RequestPlayActionC2SPayload;
+import mod.arcomit.parkour.v2.core.animation.player.network.RequestPlayOneOffAnimC2SPayload;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
@@ -51,7 +51,7 @@ public class PlayerAnimationManager {
 	}
 
 	/**
-	 * 播放一次性动画（如翻滚、受击）
+	 * 播放一次性动画（如翻滚、受击），应只在LocalPlayer上调用，会自动同步请求服务器广播给其它玩家客户端播放同样的动画。
 	 *
 	 * @param player        目标玩家
 	 * @param animationId     要播放的动作ID
@@ -81,7 +81,7 @@ public class PlayerAnimationManager {
 		ACTION_INTERRUPTIBLE.put(uuid, interruptible);
 
 		if (player.isLocalPlayer()) {
-			PacketDistributor.sendToServer(new RequestPlayActionC2SPayload(animationId, interruptible));
+			PacketDistributor.sendToServer(new RequestPlayOneOffAnimC2SPayload(animationId, interruptible));
 		}
 	}
 

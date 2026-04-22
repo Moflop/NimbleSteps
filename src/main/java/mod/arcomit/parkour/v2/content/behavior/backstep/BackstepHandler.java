@@ -1,4 +1,4 @@
-package mod.arcomit.parkour.v2.content.behavior.backstep.common;
+package mod.arcomit.parkour.v2.content.behavior.backstep;
 
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.content.init.PkParkourStates;
