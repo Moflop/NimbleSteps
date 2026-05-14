@@ -1,8 +1,6 @@
 package mod.arcomit.parkour.v2.content.behavior.wallslide;
 
-import mod.arcomit.parkour.ServerConfig;
 import mod.arcomit.parkour.v1.utils.DirectionUtils;
-import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.sensor.AbstractBoxSensor;
 import mod.arcomit.parkour.v2.core.sensor.SensorManager;
@@ -52,12 +50,12 @@ public class WallSlideLogic {
 			player.resetFallDistance();
 
 			// 判断方向是否改变
-			int oldDir = context.wallData().getWallSlideDirection();
+			int oldDir = context.wallData().getWallSlideCollisionDir3DData();
 			int newDir = wallDir.get3DDataValue();
 
 			if (oldDir != newDir) {
 				// 更新数据
-				context.wallData().setWallSlideDirection(newDir);
+				context.wallData().setWallSlideCollisionDir3DData(newDir);
 
 				// 既然服务端也会同步执行，直接由服务端发送广播包给周围的客户端
 				if (!player.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
@@ -74,10 +72,9 @@ public class WallSlideLogic {
 	 */
 	public static Direction findAvailableWallDirection(Player player) {
 		SensorManager sensorManager = SensorManager.get(player);
-		if (sensorManager == null) return null;
 
 		ParkourContext context = ParkourContext.get(player);
-		int cachedDirIndex = context.wallData().getWallSlideDirection();
+		int cachedDirIndex = context.wallData().getWallSlideCollisionDir3DData();
 
 		// 优先检测当前缓存的滑墙方向是否依然有效
 		if (cachedDirIndex >= 0 && cachedDirIndex <= 5) {

@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.mixin;
 
-import mod.arcomit.parkour.v2.core.animation.camera.CameraAnimationController;
+import mod.arcomit.parkour.v2.core.client.animation.camera.CameraAnimationManager;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -39,7 +39,7 @@ public abstract class CameraMixin {
 			return;
 		}
 
-		CameraAnimationController controller = CameraAnimationController.INSTANCE;
+		CameraAnimationManager controller = CameraAnimationManager.INSTANCE;
 
 		if (controller.isPlaying()) {
 			float[] position = controller.getCurrentPosition();

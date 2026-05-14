@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.content.mixin;
 
-import mod.arcomit.parkour.ServerConfig;
-import mod.arcomit.parkour.v2.content.init.PkTags;
+import mod.arcomit.parkour.ParkourConfig;
+import mod.arcomit.parkour.v2.content.init.ParkourTags;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -63,7 +63,7 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@Inject(method = "onClimbable", at = @At("HEAD"), cancellable = true)
 	public void InjectOnClimbable(CallbackInfoReturnable<Boolean> cir) {
-		if (!ServerConfig.canClimbMoreBlocks) return;
+		if (!ParkourConfig.canClimbMoreBlocks) return;
 
 		LivingEntity entity = (LivingEntity) (Object) this;
 
@@ -80,7 +80,7 @@ public abstract class LivingEntityMixin extends Entity {
 	@Unique
 	private boolean isClimbablePole(Level world, BlockPos blockPos) {
 		BlockState blockState = world.getBlockState(blockPos);
-		if (!blockState.is(PkTags.Blocks.CLIMBABLE)) {
+		if (!blockState.is(ParkourTags.Blocks.CLIMBABLE)) {
 			return false;
 		}
 		Block block = blockState.getBlock();
@@ -134,12 +134,12 @@ public abstract class LivingEntityMixin extends Entity {
 	private double accelerateUpClimbing(double vanillaClimbSpeed) {
 		climbingUpThisTick = true;
 		// 基础速度提升
-		if (ServerConfig.enableUpClimbSpeedIncrease) {
-			vanillaClimbSpeed *= ServerConfig.upClimbSpeedMultiplier;
+		if (ParkourConfig.enableUpClimbSpeedIncrease) {
+			vanillaClimbSpeed *= ParkourConfig.upClimbSpeedMultiplier;
 		}
-		if (ServerConfig.enableClimbAccelerationOverTime) {
+		if (ParkourConfig.enableClimbAccelerationOverTime) {
 			// 在3秒（60刻）内，速度线性增加
-			double maxSpeed = vanillaClimbSpeed * ServerConfig.upClimbAccelerationMultiplier;
+			double maxSpeed = vanillaClimbSpeed * ParkourConfig.upClimbAccelerationMultiplier;
 			double climbYSpeed = Mth.clampedMap(climbUpTicks, CLIMB_ACCELERATION_START_TICK, CLIMB_ACCELERATION_FINISH_TICK, vanillaClimbSpeed, maxSpeed);
 			// 取当前速度和计算出的攀爬速度的较大值
 			return Math.max(this.getDeltaMovement().y, climbYSpeed);
@@ -157,12 +157,12 @@ public abstract class LivingEntityMixin extends Entity {
 		at = @At(value = "INVOKE", target = "Ljava/lang/Math;max(DD)D")
 	)
 	private double accelerateDownClimbing(double currentYSpeed, double vanillaDownSpeed) {
-		if (ServerConfig.enableDownClimbSpeedIncrease) {
-			double maxSpeedIncrease = vanillaDownSpeed * ServerConfig.downClimbSpeedMultiplier;
+		if (ParkourConfig.enableDownClimbSpeedIncrease) {
+			double maxSpeedIncrease = vanillaDownSpeed * ParkourConfig.downClimbSpeedMultiplier;
 			vanillaDownSpeed = Mth.clampedMap(this.getXRot(), DOWN_CLIMB_ACCELERATE_LOOK_MIN_PITCH, DOWN_CLIMB_ACCELERATE_LOOK_MAX_PITCH, vanillaDownSpeed, maxSpeedIncrease);;
 		}
-		if (ServerConfig.enableClimbAccelerationOverTime) {
-			double acceleratedSpeed = vanillaDownSpeed * ServerConfig.downClimbAccelerationMultiplier;
+		if (ParkourConfig.enableClimbAccelerationOverTime) {
+			double acceleratedSpeed = vanillaDownSpeed * ParkourConfig.downClimbAccelerationMultiplier;
 			vanillaDownSpeed = Mth.clampedMap(climbDownTicks, CLIMB_ACCELERATION_START_TICK, CLIMB_ACCELERATION_FINISH_TICK, vanillaDownSpeed, acceleratedSpeed);
 		}
 		return Math.max(currentYSpeed, vanillaDownSpeed);
@@ -221,7 +221,7 @@ public abstract class LivingEntityMixin extends Entity {
 		at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(DDD)D")
 	)
 	private double modifyHorizontalClimbSpeed(double speed, double vanillaSpeedMin, double vanillaSpeedMax) {
-		if ((!this.onGround() && !this.jumping) || !ServerConfig.climbableBlockNotSlowDown) {
+		if ((!this.onGround() && !this.jumping) || !ParkourConfig.climbableBlockNotSlowDown) {
 			return Mth.clamp(speed, vanillaSpeedMin, vanillaSpeedMax);
 		} else {
 			return speed;

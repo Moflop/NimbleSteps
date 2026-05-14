@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.core.statemachine.network;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.content.init.PkRegistries;
+import mod.arcomit.parkour.v2.content.init.ParkourRegistries;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
 import mod.arcomit.parkour.v2.core.statemachine.ParkourStateMachine;
@@ -39,17 +39,18 @@ public record RequestStateTransitionC2SPayload(ResourceLocation targetStateId, i
 	public static void handle(RequestStateTransitionC2SPayload packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
+				ParkourContext pkContext = ParkourContext.get(player);
 				ResourceLocation stateId = packet.targetStateId();
 				int animVariant = packet.animVariant();
-				IParkourState targetState = PkRegistries.PARKOUR_STATE_REGISTRY.get(stateId);
+				IParkourState targetState = ParkourRegistries.PARKOUR_STATE_REGISTRY.get(stateId);
 
-				if (targetState != null && targetState.canEnter(player)) {
-					ParkourStateMachine.transitionTo(player, targetState, animVariant);
+				if (targetState != null && targetState.canEnter(player, pkContext)) {
+					ParkourStateMachine.transitionTo(player, pkContext, targetState, animVariant);
 				} else {
 					// 获取当前服务端合法状态的ID
 					StateData stateData = ParkourContext.get(player).stateData();
 					IParkourState currentState = stateData.getState();
-					ResourceLocation currentStateId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(currentState);
+					ResourceLocation currentStateId = ParkourRegistries.PARKOUR_STATE_REGISTRY.getKey(currentState);
 					int variant = stateData.getAnimVariant();
 
 					// 向客户端发包RejectStateRequestS2CPayload拒绝请求并把状态还原

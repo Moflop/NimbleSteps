@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.core.sensor;
 
-import mod.arcomit.parkour.v2.content.sensor.*;
-import mod.arcomit.parkour.v2.content.init.PkAttachmentTypes;
+import mod.arcomit.parkour.v2.content.init.ParkourAttachmentTypes;
+import mod.arcomit.parkour.v2.core.sensor.impl.*;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SensorManager {
-	private final Map<String, AbstractBoxSensor> sensors = new HashMap<>();
+	private final Map<String, ISensor> sensors = new HashMap<>();
 
 	public SensorManager() {
 		for (Direction dir : Direction.Plane.HORIZONTAL) {
@@ -28,21 +28,21 @@ public class SensorManager {
 	}
 
 	// 注册传感器
-	public void register(AbstractBoxSensor sensor) {
+	public void register(ISensor sensor) {
 		sensors.put(sensor.getId(), sensor);
 	}
 
 	// 获取指定的传感器
-	public AbstractBoxSensor getSensor(String id) {
+	public ISensor getSensor(String id) {
 		return sensors.get(id);
 	}
 
 	// 获取所有传感器（给 Debug 渲染器遍历用）
-	public Collection<AbstractBoxSensor> getAllSensors() {
+	public Collection<ISensor> getAllSensors() {
 		return sensors.values();
 	}
 
 	public static SensorManager get(Player player) {
-		return player.getData(PkAttachmentTypes.SENSOR_MANAGER);
+		return player.getData(ParkourAttachmentTypes.SENSOR_MANAGER);
 	}
 }

@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.content.mechanic.fallheight;
 
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.ServerConfig;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -19,7 +19,7 @@ public class SafeFallHeightIncreaseHandler {
 
 	@SubscribeEvent
 	public static void adjustFallDistanceForSafeFall(LivingFallEvent event) {
-		if (!ServerConfig.enableSafeFallHeightIncrease) {
+		if (!ParkourConfig.enableSafeFallHeightIncrease) {
 			return;
 		}
 
@@ -28,7 +28,7 @@ public class SafeFallHeightIncreaseHandler {
 		}
 
 		float distance = event.getDistance();
-		float adjustment = (float) ServerConfig.safeFallHeight - VANILLA_SAFE_FALL_DISTANCE;
+		float adjustment = (float) ParkourConfig.safeFallHeight - VANILLA_SAFE_FALL_DISTANCE;
 		event.setDistance(distance - adjustment);
 	}
 }

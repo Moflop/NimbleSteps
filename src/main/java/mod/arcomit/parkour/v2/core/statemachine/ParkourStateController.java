@@ -2,6 +2,7 @@ package mod.arcomit.parkour.v2.core.statemachine;
 
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -37,7 +38,8 @@ public class ParkourStateController {
 	public static void onPlayerFall(LivingFallEvent event) {
 		if (!(event.getEntity() instanceof Player player)) return;
 		if (!PlayerStateUtils.fallWillTakeDamage(player)) return;
-		ParkourStateMachine.tryFallTransition(player, event);
+		ParkourContext context = ParkourContext.get(player);
+		ParkourStateMachine.tryFallTransition(player, context, event);
 	}
 
 	/**
@@ -47,7 +49,8 @@ public class ParkourStateController {
 	@SubscribeEvent
 	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
 		if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-			ParkourStateMachine.resetState(serverPlayer);
+			ParkourContext context = ParkourContext.get(serverPlayer);
+			ParkourStateMachine.resetToDefaultStateAndSync(serverPlayer, context);
 		}
 	}
 }

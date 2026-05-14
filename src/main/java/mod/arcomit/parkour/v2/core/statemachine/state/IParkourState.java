@@ -93,14 +93,14 @@ public interface IParkourState {
 	/**
 	 * 用于服务端校验是否能进入该状态
 	 */
-	default boolean canEnter(Player player) {
+	default boolean canEnter(Player player, ParkourContext context) {
 		return true;
 	}
 
 	/**
 	 * 是否有效：用于判断是否可持续维持当前状态
 	 */
-	default boolean isValid(Player player) {
+	default boolean isValid(Player player, ParkourContext context) {
 		return true;
 	}
 

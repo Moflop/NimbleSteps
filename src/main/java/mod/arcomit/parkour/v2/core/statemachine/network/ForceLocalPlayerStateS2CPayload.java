@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.core.statemachine.network;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.content.init.PkRegistries;
+import mod.arcomit.parkour.v2.content.init.ParkourRegistries;
 import mod.arcomit.parkour.v2.core.statemachine.ParkourStateMachine;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import net.minecraft.client.Minecraft;
@@ -39,7 +39,7 @@ public record ForceLocalPlayerStateS2CPayload(ResourceLocation correctStateId, i
 			// 客户端逻辑：强制拉回服务端的合法状态
 			Player player = Minecraft.getInstance().player;
 			if (player != null) {
-				IParkourState correctState = PkRegistries.PARKOUR_STATE_REGISTRY.get(packet.correctStateId());
+				IParkourState correctState = ParkourRegistries.PARKOUR_STATE_REGISTRY.get(packet.correctStateId());
 				if (correctState != null) {
 					ParkourStateMachine.transitionTo(player, correctState, packet.animVariant());
 				}

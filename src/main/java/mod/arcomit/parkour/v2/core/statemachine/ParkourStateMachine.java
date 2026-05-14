@@ -1,17 +1,16 @@
 package mod.arcomit.parkour.v2.core.statemachine;
 
-import mod.arcomit.parkour.v2.content.init.PkParkourStates;
-import mod.arcomit.parkour.v2.content.init.PkRegistries;
-import mod.arcomit.parkour.v2.content.client.NsKeyMapping;
-import mod.arcomit.parkour.v2.core.animation.player.PlayerAnimationManager;
+import mod.arcomit.parkour.v2.content.init.ParkourRegistries;
+import mod.arcomit.parkour.v2.content.init.ParkourStates;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
+import mod.arcomit.parkour.v2.core.input.ParkourInputActions;
+import mod.arcomit.parkour.v2.core.proxy.ParkourProxies;
 import mod.arcomit.parkour.v2.core.statemachine.network.BroadcastStateChangeS2CPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.RequestStateTransitionC2SPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.ForceLocalPlayerStateS2CPayload;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityDimensions;
@@ -39,7 +38,7 @@ public class ParkourStateMachine {
 	 * 处理服务端与客户端不同的逻辑分支：客户端进行本地预测以保证流畅性，服务端进行合法性校验并在环境变化时处理状态回退。
 	 * @param player 正在更新状态的玩家。
 	 */
-	public static void tick(Player player) {
+	public static void tick(@NotNull Player player) {
 		ParkourContext context = ParkourContext.get(player);
 		StateData stateData = context.stateData();
 		IParkourState currentState = stateData.getState();
@@ -59,7 +58,7 @@ public class ParkourStateMachine {
 			}
 
 			if (player.level().isClientSide()) {
-				PlayerAnimationManager.playStateAnimation(player);
+				ParkourProxies.PLAYER_ANIM_PROXY.playStateAnimation(player);
 			}
 		}
 
@@ -69,27 +68,23 @@ public class ParkourStateMachine {
 		// 严禁客户端私自切断 RemotePlayer 的状态
 		// 只有服务端，或者客户端的本地玩家，才进行 Tick 级别的状态自动转换
 		if (!player.level().isClientSide() || player.isLocalPlayer()) {
-			tryTickTransition(player, currentState);
+			tryTickTransition(player, context, currentState);
 		}
 
 		if (player.level().isClientSide()) {
-			// 仅客户端本地预测状态转换
-			if (player instanceof LocalPlayer localPlayer) {
-				tryLocalTickTransition(localPlayer, currentState);
-			}
-		}else {
-			// 服务端权威校验：如果当前状态已不再合法（通常由于环境突变导致，如脚下悬空），强制退回默认状态。
-			if (!currentState.isValid(player)) {
-				IParkourState defaultState = PkParkourStates.DEFAULT.get();
-				if (defaultState.isValid(player)) {
-					transitionTo(player, defaultState);
-
-					ResourceLocation defaultId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(defaultState);
-					if (defaultId != null) {
-						PacketDistributor.sendToPlayer((ServerPlayer) player,
-							new ForceLocalPlayerStateS2CPayload(defaultId, IParkourState.DEFAULT_ANIM_VARIANT));
-					}
+			// 仅本地玩家执行客户端预测转换
+			if (player.isLocalPlayer()) {
+				// 如果当前状态失效，强制退回默认状态并结束本帧预测
+				if (!currentState.isValid(player, context)) {
+					resetToDefaultState(player, context);
+					return;
 				}
+				tryLocalTickTransition(player, context, currentState);
+			}
+		} else if (player instanceof ServerPlayer serverPlayer) {
+			// 服务端：权威校验
+			if (!currentState.isValid(serverPlayer, context)) {
+				resetToDefaultStateAndSync(serverPlayer, context);
 			}
 		}
 	}
@@ -103,24 +98,25 @@ public class ParkourStateMachine {
 	 * @param player	   尝试转换状态的玩家。
 	 * @param currentState 当前所处的状态。
 	 */
-	private static void tryTickTransition(Player player, IParkourState currentState) {
+	private static void tryTickTransition(@NotNull Player player, @NotNull ParkourContext context, IParkourState currentState) {
 		List<IParkourStateTransition> transitions = currentState.getTransitions();
 		for (IParkourStateTransition transition : transitions) {
-			if (transition.shouldTransitionOnTick(player)) {
-				transitionTo(player, transition.getTargetState());
+			IParkourState targetState = transition.getTargetState();
+			if (targetState.canEnter(player, context) && transition.shouldTransitionOnTick(player, context)) {
+				transitionTo(player, context, targetState);
 				return;
 			}
 		}
 	}
 
-	public static void tryFallTransition(Player player, LivingFallEvent event) {
+	public static void tryFallTransition(@NotNull Player player, @NotNull ParkourContext context, LivingFallEvent event) {
 		StateData stateData = ParkourContext.get(player).stateData();
 		IParkourState currentState = stateData.getState();
 		List<IParkourStateTransition> transitions = currentState.getTransitions();
 		for (IParkourStateTransition transition : transitions) {
-			if (transition.shouldTransitionOnFall(player, event)) {
-				IParkourState targetState = transition.getTargetState();
-				transitionTo(player, targetState);
+			IParkourState targetState = transition.getTargetState();
+			if (targetState.canEnter(player, context) && transition.shouldTransitionOnFall(player, context, event)) {
+				transitionTo(player, context, targetState);
 				return;
 			}
 		}
@@ -135,15 +131,16 @@ public class ParkourStateMachine {
 	 * @param player	   尝试转换状态的本地玩家。
 	 * @param currentState 当前所处的状态。
 	 */
-	private static void tryLocalTickTransition(LocalPlayer player, IParkourState currentState) {
+	private static void tryLocalTickTransition(@NotNull Player player, @NotNull ParkourContext context, IParkourState currentState) {
 		// 防止误调
 		if (!player.isLocalPlayer()) {
 			return;
 		}
 		List<IParkourStateTransition> transitions = currentState.getTransitions();
 		for (IParkourStateTransition transition : transitions) {
-			if (transition.shouldTransitionOnLocalTick(player)) {
-				localTransitionTo(player, transition.getTargetState());
+			IParkourState targetState = transition.getTargetState();
+			if (targetState.canEnter(player, context) && transition.shouldTransitionOnLocalTick(player, context)) {
+				localTransitionTo(player, context, targetState);
 				return;
 			}
 		}
@@ -156,9 +153,9 @@ public class ParkourStateMachine {
 	 * 仅限客户端本地玩家使用（在多人游戏中，客户端也会存在其他玩家的实体，故需排除）。
 	 * 此方法通常由输入状态机控制器在捕获到按键时自动调用。
 	 * @param player	 尝试转换状态的本地玩家。
-	 * @param keyMapping 触发当前事件的按键映射。
+	 * @param inputAction 触发当前事件的按键映射。
 	 */
-	public static void tryInputTransition(LocalPlayer player, NsKeyMapping keyMapping) {
+	public static void tryInputTransition(@NotNull Player player, @NotNull ParkourContext context, ParkourInputActions inputAction) {
 		// 防止误调
 		if (!player.isLocalPlayer()) {
 			return;
@@ -167,11 +164,17 @@ public class ParkourStateMachine {
 		IParkourState currentState = stateData.getState();
 		List<IParkourStateTransition> transitions = currentState.getTransitions();
 		for (IParkourStateTransition transition : transitions) {
-			if (transition.shouldTransitionOnInput(player, keyMapping)) {
-				localTransitionTo(player, transition.getTargetState());
+			IParkourState targetState = transition.getTargetState();
+			if (targetState.canEnter(player, context) && transition.shouldTransitionOnInput(player, context, inputAction)) {
+				localTransitionTo(player, context, targetState);
 				return;
 			}
 		}
+	}
+
+	public static void localTransitionTo(@NotNull Player player, @NotNull IParkourState targetState){
+		ParkourContext context = ParkourContext.get(player);
+		localTransitionTo(player, context, targetState);
 	}
 
 	/**
@@ -180,9 +183,14 @@ public class ParkourStateMachine {
 	 * @param player 需要转换状态的本地玩家。
 	 * @param targetState 目标状态。
 	 */
-	public static void localTransitionTo(LocalPlayer player, IParkourState targetState) {
+	public static void localTransitionTo(@NotNull Player player, @NotNull ParkourContext context, @NotNull IParkourState targetState) {
 		int variant = targetState.generateVariant(player);
-		localTransitionTo(player, targetState, variant);
+		localTransitionTo(player, context, targetState, variant);
+	}
+
+	public static void localTransitionTo(@NotNull Player player, @NotNull IParkourState targetState, int animVariant) {
+		ParkourContext context = ParkourContext.get(player);
+		localTransitionTo(player, context, targetState, animVariant);
 	}
 
 	/**
@@ -192,14 +200,19 @@ public class ParkourStateMachine {
 	 * @param targetState 目标状态。
 	 * @param animVariant 动画变体 ID。
 	 */
-	public static void localTransitionTo(LocalPlayer player, IParkourState targetState, int animVariant) {
-		transitionTo(player, targetState, animVariant);
+	public static void localTransitionTo(@NotNull Player player, @NotNull ParkourContext context, @NotNull IParkourState targetState, int animVariant) {
+		transitionTo(player, context, targetState, animVariant);
 
 		// 发包请求服务端进行状态转换验证并广播
-		ResourceLocation targetStateId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(targetState);
+		ResourceLocation targetStateId = ParkourRegistries.PARKOUR_STATE_REGISTRY.getKey(targetState);
 		if (targetStateId != null) {
  			PacketDistributor.sendToServer(new RequestStateTransitionC2SPayload(targetStateId, animVariant));
 		}
+	}
+
+	public static void transitionTo(@NotNull Player player, @NotNull IParkourState targetState) {
+		ParkourContext context = ParkourContext.get(player);
+		transitionTo(player, context, targetState);
 	}
 
 	/**
@@ -207,9 +220,14 @@ public class ParkourStateMachine {
 	 * @param player 	  需要转换状态的玩家。
 	 * @param targetState 目标状态。
 	 */
-	public static void transitionTo(Player player, IParkourState targetState) {
+	public static void transitionTo(@NotNull Player player, @NotNull ParkourContext context, @NotNull IParkourState targetState) {
 		int variant = targetState.generateVariant(player);
-		transitionTo(player, targetState, variant);
+		transitionTo(player, context, targetState, variant);
+	}
+
+	public static void transitionTo(@NotNull Player player, @NotNull IParkourState targetState, int animVariant) {
+		ParkourContext context = ParkourContext.get(player);
+		transitionTo(player, context, targetState, animVariant);
 	}
 
 	/**
@@ -219,8 +237,7 @@ public class ParkourStateMachine {
 	 * @param targetState 目标状态。
 	 * @param animVariant 动画变体 ID。
 	 */
-	public static void transitionTo(@NotNull Player player, @NotNull IParkourState targetState, int animVariant) {
-		ParkourContext context = ParkourContext.get(player);
+	public static void transitionTo(@NotNull Player player, @NotNull ParkourContext context, @NotNull IParkourState targetState, int animVariant) {
 		StateData stateData = context.stateData();
 		IParkourState currentState = stateData.getState();
 
@@ -247,9 +264,9 @@ public class ParkourStateMachine {
 		}
 
 		if (player.level().isClientSide()) {
-			PlayerAnimationManager.playStateAnimation(player);
+			ParkourProxies.PLAYER_ANIM_PROXY.playStateAnimation(player);
 		}else {
-			ResourceLocation targetStateId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(targetState);
+			ResourceLocation targetStateId = ParkourRegistries.PARKOUR_STATE_REGISTRY.getKey(targetState);
 			PacketDistributor.sendToPlayersTrackingEntity(player,
 				new BroadcastStateChangeS2CPayload(player.getId(), targetStateId, animVariant)
 			);
@@ -259,19 +276,33 @@ public class ParkourStateMachine {
 	}
 
 	/**
-	 * 跨越维度时重置玩家的跑酷状态。
-	 * @param player 需要重置状态的玩家。
+	 * 判断当前上下文是否需要重置为默认状态
 	 */
-	public static void resetState(@NotNull ServerPlayer player) {
-		StateData stateData = ParkourContext.get(player).stateData();
-		IParkourState defaultState = PkParkourStates.DEFAULT.get();
-		if (stateData.getState() != defaultState) {
-			transitionTo(player, defaultState);
-			ResourceLocation defaultId = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(defaultState);
+	private static boolean shouldResetToDefault(@NotNull ParkourContext context) {
+		IParkourState currentState = context.stateData().getState();
+		IParkourState defaultState = ParkourStates.DEFAULT.get();
+		return currentState != defaultState;
+	}
+
+	/**
+	 * 重置为默认状态（不进行网络同步）
+	 */
+	public static void resetToDefaultState(@NotNull Player player, @NotNull ParkourContext context) {
+		if (shouldResetToDefault(context)) {
+			transitionTo(player, context, ParkourStates.DEFAULT.get());
+		}
+	}
+
+	/**
+	 * 重置为默认状态并向客户端同步，专用于服务端
+	 */
+	public static void resetToDefaultStateAndSync(@NotNull ServerPlayer serverPlayer, @NotNull ParkourContext context) {
+		if (shouldResetToDefault(context)) {
+			transitionTo(serverPlayer, context, ParkourStates.DEFAULT.get());
+			ResourceLocation defaultId = ParkourStates.DEFAULT.getId();
 			if (defaultId != null) {
-				// 同步玩家本人的客户端
 				PacketDistributor.sendToPlayer(
-					player, new ForceLocalPlayerStateS2CPayload(defaultId, IParkourState.DEFAULT_ANIM_VARIANT)
+					serverPlayer, new ForceLocalPlayerStateS2CPayload(defaultId, IParkourState.DEFAULT_ANIM_VARIANT)
 				);
 			}
 		}

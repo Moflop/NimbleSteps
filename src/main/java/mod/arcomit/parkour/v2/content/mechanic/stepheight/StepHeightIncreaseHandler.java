@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.content.mechanic.stepheight;
 
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.ServerConfig;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -24,7 +24,7 @@ public class StepHeightIncreaseHandler {
 
 	@SubscribeEvent
 	public static void adjustPlayerStepHeight(PlayerTickEvent.Post event) {
-		if (!ServerConfig.enableStepHeightIncrease) {
+		if (!ParkourConfig.enableStepHeightIncrease) {
 			return;
 		}
 
@@ -39,9 +39,9 @@ public class StepHeightIncreaseHandler {
 
 		double stepHeightBonus;
 		if (player.isSprinting() && !player.isSwimming()) {
-			stepHeightBonus = ServerConfig.sprintStepHeight - VANILLA_STEP_HEIGHT;
+			stepHeightBonus = ParkourConfig.sprintStepHeight - VANILLA_STEP_HEIGHT;
 		} else {
-			stepHeightBonus = ServerConfig.walkStepHeight - VANILLA_STEP_HEIGHT;
+			stepHeightBonus = ParkourConfig.walkStepHeight - VANILLA_STEP_HEIGHT;
 		}
 
 		AttributeModifier walkModifier = new AttributeModifier(

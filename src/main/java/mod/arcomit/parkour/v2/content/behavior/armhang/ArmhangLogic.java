@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.behavior.armhang;
 
-import mod.arcomit.parkour.ServerConfig;
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.v1.utils.CollisionUtils;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
@@ -32,12 +32,12 @@ public class ArmhangLogic {
 		SensorManager sensorManager = SensorManager.get(player);
 
 		// 1. 基于眼睛高度的检测
-		boolean eyeGrip = sensorManager.getSensor("armhang_grip_eye" + direction.getName()).isColliding(player);
-		boolean eyeSupport = sensorManager.getSensor("armhang_support_eye" + direction.getName()).isColliding(player);
+		boolean eyeGrip = sensorManager.getSensor("armhang_grip_eye_" + direction.getName()).isColliding(player);
+		boolean eyeSupport = sensorManager.getSensor("armhang_support_eye_" + direction.getName()).isColliding(player);
 
 		// 2. 基于碰撞箱顶端高度的检测
-		boolean topGrip = sensorManager.getSensor("armhang_grip_top" + direction.getName()).isColliding(player);
-		boolean topSupport = sensorManager.getSensor("armhang_support_top" + direction.getName()).isColliding(player);
+		boolean topGrip = sensorManager.getSensor("armhang_grip_top_" + direction.getName()).isColliding(player);
+		boolean topSupport = sensorManager.getSensor("armhang_support_top_" + direction.getName()).isColliding(player);
 
 		// 有支撑点且无抓握点遮挡即可攀爬
 		return (eyeSupport && !eyeGrip) || (topSupport && !topGrip);
@@ -50,7 +50,7 @@ public class ArmhangLogic {
 		ParkourContext context = ParkourContext.get(player);
 		boolean isFalling = player.fallDistance > 0f;
 
-		return ServerConfig.enableArmhang
+		return ParkourConfig.enableArmhang
 			&& !player.onGround()
 			&& context.jumpData().isJumped()
 			&& isFalling
@@ -69,7 +69,7 @@ public class ArmhangLogic {
 		player.setPos(player.getX(), player.getY(), player.getZ());
 		player.setDeltaMovement(Vec3.ZERO);
 
-		Direction armhangingDirection = Direction.from3DDataValue(wallData.getArmHangingDirection());
+		Direction armhangingDirection = Direction.from3DDataValue(wallData.getArmHangingDir());
 
 		// 内角旋转检测
 		handleInnerCornerRotation(player, wallData);
@@ -95,11 +95,11 @@ public class ArmhangLogic {
 
 	private static void handleInnerCornerRotation(Player player, WallData wallData) {
 		Direction playerFacing = player.getDirection();
-		Direction currentArmhangDirection = Direction.from3DDataValue(wallData.getArmHangingDirection());
+		Direction currentArmhangDirection = Direction.from3DDataValue(wallData.getArmHangingDir());
 
 		if (playerFacing != currentArmhangDirection) {
 			if (isClimbableAtDirection(player, playerFacing)) {
-				wallData.setArmHangingDirection(playerFacing.get3DDataValue());
+				wallData.setArmHangingDir(playerFacing.get3DDataValue());
 			}
 		}
 	}
@@ -108,7 +108,7 @@ public class ArmhangLogic {
 		boolean isFacingArmhangingDirection = player.getDirection() == armhangingDirection;
 
 		Vec3 rightDirection = new Vec3(armhangingDirection.getStepZ(), 0, -armhangingDirection.getStepX());
-		Vec3 horizontalMovement = rightDirection.scale(leftImpulse).normalize().scale(ServerConfig.armhangMoveSpeed);
+		Vec3 horizontalMovement = rightDirection.scale(leftImpulse).normalize().scale(ParkourConfig.armhangMoveSpeed);
 
 		Vec3 beforeMove = player.position();
 		player.move(MoverType.PLAYER, horizontalMovement);
@@ -137,7 +137,7 @@ public class ArmhangLogic {
 	}
 
 	private static boolean handleOuterCornerRotation(LocalPlayer player, WallData wallData, Vec3 afterMove, float leftImpulse) {
-		Direction currentDirection = Direction.from3DDataValue(wallData.getArmHangingDirection());
+		Direction currentDirection = Direction.from3DDataValue(wallData.getArmHangingDir());
 		Vec3 directionOffset = new Vec3(currentDirection.getStepX(), 0, currentDirection.getStepZ()).scale(CORNER_OFFSET);
 		Vec3 cornerPosition = afterMove.add(directionOffset);
 
@@ -159,7 +159,7 @@ public class ArmhangLogic {
 		// 为检测转角可攀爬性，临时将位置设为转角处以利用传感器
 		player.setPos(cornerPosition.x, cornerPosition.y, cornerPosition.z);
 		if (isClimbableAtDirection(player, newDirection)) {
-			wallData.setArmHangingDirection(newDirection.get3DDataValue());
+			wallData.setArmHangingDir(newDirection.get3DDataValue());
 			player.sendPosition();
 			// TODO: 发包给服务端同步 Direction
 			// PacketDistributor.sendToServer(new ServerboundSyncArmHangingDirectionPacket(newDirection.get3DDataValue()));

@@ -1,9 +1,9 @@
 package mod.arcomit.parkour;
 
 import com.mojang.logging.LogUtils;
-import mod.arcomit.parkour.v2.content.init.PkAttachmentTypes;
-import mod.arcomit.parkour.v2.content.init.PkParkourStates;
-import mod.arcomit.parkour.v2.content.init.PkSounds;
+import mod.arcomit.parkour.v2.content.init.ParkourAttachmentTypes;
+import mod.arcomit.parkour.v2.content.init.ParkourStates;
+import mod.arcomit.parkour.v2.content.init.ParkourSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -23,10 +23,10 @@ public class ParkourMod {
 	public static final Logger LOGGER = LogUtils.getLogger();
 
 	public ParkourMod(IEventBus modEventBus, ModContainer modContainer) {
-		modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
-		PkAttachmentTypes.register(modEventBus);
-		PkParkourStates.register(modEventBus);
-		PkSounds.register(modEventBus);
+		modContainer.registerConfig(ModConfig.Type.SERVER, ParkourConfig.SPEC);
+		ParkourAttachmentTypes.register(modEventBus);
+		ParkourStates.register(modEventBus);
+		ParkourSounds.register(modEventBus);
 		LOGGER.info("Parkour mod initialized!");
 	}
 

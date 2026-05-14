@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.core.statemachine.network;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.content.init.PkRegistries;
+import mod.arcomit.parkour.v2.content.init.ParkourRegistries;
 import mod.arcomit.parkour.v2.core.statemachine.ParkourStateMachine;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import net.minecraft.client.Minecraft;
@@ -45,7 +45,7 @@ public record BroadcastStateChangeS2CPayload(int entityId, ResourceLocation stat
 				Entity entity = level.getEntity(packet.entityId());
 				// 本地玩家(LocalPlayer)已经通过预测切换了状态，只处理远程玩家(RemotePlayer)
 				if (entity != null && entity instanceof Player player && !player.isLocalPlayer()) {
-					IParkourState newState = PkRegistries.PARKOUR_STATE_REGISTRY.get(packet.stateId());
+					IParkourState newState = ParkourRegistries.PARKOUR_STATE_REGISTRY.get(packet.stateId());
 					if (newState != null) {
 						ParkourStateMachine.transitionTo(player, newState, packet.animVariant());
 					}

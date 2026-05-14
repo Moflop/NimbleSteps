@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.action.swimmingboost;
 
-import mod.arcomit.parkour.ServerConfig;
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
 import mod.arcomit.parkour.v2.core.context.SwimData;
 import net.minecraft.client.Minecraft;
@@ -25,7 +25,7 @@ public class SwimmingBoostLogic {
 	 * 执行水中推进核心物理逻辑与音效。
 	 */
 	public static void useSwimmingBoost(Player player, SwimData swimData) {
-		swimData.setSwimmingBoostCooldown(ServerConfig.swimmingBoostCooldown);
+		swimData.setSwimmingBoostCooldown(ParkourConfig.swimmingBoostCooldown);
 		Vec3 deltaMovement = player.getDeltaMovement();
 
 		Vec3 boostDirection;
@@ -36,7 +36,7 @@ public class SwimmingBoostLogic {
 			boostDirection = player.getLookAngle();
 		}
 
-		Vec3 boostVelocity = boostDirection.scale(ServerConfig.swimmingBoostSpeedMultiplier);
+		Vec3 boostVelocity = boostDirection.scale(ParkourConfig.swimmingBoostSpeedMultiplier);
 		player.setDeltaMovement(deltaMovement.add(boostVelocity));
 
 		// 双端音效播放逻辑
@@ -67,7 +67,7 @@ public class SwimmingBoostLogic {
 	 * 判定是否满足推进条件。
 	 */
 	public static boolean canSwimmingBoost(Player player, SwimData swimData) {
-		return ServerConfig.enableSwimmingBoost
+		return ParkourConfig.enableSwimmingBoost
 			&& swimData.getSwimmingBoostCooldown() <= 0
 			&& player.isSwimming()
 			&& PlayerStateUtils.isAbleToAction(player);

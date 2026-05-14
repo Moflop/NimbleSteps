@@ -4,7 +4,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public abstract class AbstractBoxSensor {
+public abstract class AbstractBoxSensor implements ISensor {
 	private final String id;
 
 	// 缓存数据
@@ -46,7 +46,7 @@ public abstract class AbstractBoxSensor {
 	// 由子类实现计算逻辑
 	protected abstract AABB calculateWorldBox(Player player);
 
-	protected abstract boolean shouldDebugRender(Player player);
+	public abstract boolean shouldDebugRender(Player player);
 
 	protected boolean checkCollision(Player player, AABB box) {
 		return !player.level().noCollision(player, box);

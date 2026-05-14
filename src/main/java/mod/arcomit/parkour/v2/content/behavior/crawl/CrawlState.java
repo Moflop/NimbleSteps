@@ -1,19 +1,15 @@
 package mod.arcomit.parkour.v2.content.behavior.crawl;
 
-import mod.arcomit.parkour.ServerConfig;
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
-import mod.arcomit.parkour.v2.content.behavior.wallslide.WallSlideLogic;
-import mod.arcomit.parkour.v2.content.client.NsKeyBindings;
-import mod.arcomit.parkour.v2.content.client.NsKeyMapping;
-import mod.arcomit.parkour.v2.content.init.PkParkourStates;
+import mod.arcomit.parkour.v2.content.client.input.ParkourKeyBindings;
+import mod.arcomit.parkour.v2.content.init.ParkourStates;
+import mod.arcomit.parkour.v2.core.context.ParkourContext;
+import mod.arcomit.parkour.v2.core.input.ParkourInputActions;
 import mod.arcomit.parkour.v2.core.statemachine.state.AbstractParkourState;
-import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.List;
 
 /**
  * 爬行状态
@@ -25,11 +21,8 @@ public class CrawlState extends AbstractParkourState {
 
 	public CrawlState() {
 		registerTransitions(
-			// 环境不再支持爬行时，退回默认状态
-			IParkourStateTransition.onTick(PkParkourStates.DEFAULT::get, player -> !this.isValid(player)),
-
 			// 玩家按下取消键（滑铲键）时，退回默认状态
-			IParkourStateTransition.onInput(PkParkourStates.DEFAULT::get, NsKeyBindings.SLIDE_KEY)
+			IParkourStateTransition.onInput(ParkourStates.DEFAULT::get, ParkourInputActions.SLIDE)
 		);
 	}
 
@@ -42,19 +35,19 @@ public class CrawlState extends AbstractParkourState {
 	 * 验证玩家当前环境是否满足滑墙条件
 	 */
 	public static boolean isBaseValid(Player player) {
-		return ServerConfig.enableCrawl
+		return ParkourConfig.enableCrawl
 			&& !PlayerStateUtils.fallWillTakeDamage(player)
 			&& !player.isSwimming()
-			&& PlayerStateUtils.isAbleToAction(player);
+			&& PlayerStateUtils.isAbleToBehavior(player);
 	}
 
 	@Override
-	public boolean canEnter(Player player) {
+	public boolean canEnter(Player player, ParkourContext context) {
 		return isBaseValid(player);
 	}
 
 	@Override
-	public boolean isValid(Player player) {
+	public boolean isValid(Player player, ParkourContext context) {
 		return isBaseValid(player);
 	}
 }

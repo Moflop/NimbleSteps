@@ -1,18 +1,18 @@
 package mod.arcomit.parkour.v2.content.behavior.slide;
 
-import mod.arcomit.parkour.ServerConfig;
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
-import mod.arcomit.parkour.v2.content.behavior.slide.client.SlideClientEffect;
-import mod.arcomit.parkour.v2.content.init.PkParkourStates;
+import mod.arcomit.parkour.v2.content.behavior.slide.client.ClientSlideLogic;
+import mod.arcomit.parkour.v2.content.init.ParkourStates;
 import mod.arcomit.parkour.v2.core.context.GroundData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
+import mod.arcomit.parkour.v2.core.proxy.ParkourProxies;
 import mod.arcomit.parkour.v2.core.statemachine.state.AbstractParkourState;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -27,13 +27,9 @@ public class SlideState extends AbstractParkourState {
 
 	public SlideState() {
 		registerTransitions(
-			IParkourStateTransition.onTick(
-				PkParkourStates.DEFAULT::get,
-				player -> !this.isValid(player)
-			),
 			IParkourStateTransition.onLocalTick(
-				PkParkourStates.DEFAULT::get,
-				player -> player.input.down
+				ParkourStates.DEFAULT::get,
+				(player, context) -> ParkourProxies.INPUT_PROXY.getDown(player)
 			)
 		);
 	}
@@ -46,11 +42,9 @@ public class SlideState extends AbstractParkourState {
 
 	@Override
 	public void onClientEnter(Player player, ParkourContext context) {
-		if (FMLEnvironment.dist.isClient()) {
-			SlideClientEffect.playSound(player);
-			if (player.isLocalPlayer()) {
-				SlideClientEffect.applyPhysicsAndSendPosition(player);
-			}
+		ClientSlideLogic.playSound(player);
+		if (player.isLocalPlayer()) {
+			ClientSlideLogic.applyPhysicsAndSendPosition(player);
 		}
 	}
 
@@ -73,22 +67,22 @@ public class SlideState extends AbstractParkourState {
 	 * 校验滑铲的基础环境是否合法
 	 */
 	public static boolean isBaseValid(Player player) {
-		return ServerConfig.enableSlide
+		return ParkourConfig.enableSlide
 			&& !PlayerStateUtils.fallWillTakeDamage(player)
 			&& !player.isInWater()
 			&& !player.isInLava()
-			&& PlayerStateUtils.isAbleToAction(player);
+			&& PlayerStateUtils.isAbleToBehavior(player);
 	}
 
 	@Override
-	public boolean canEnter(Player player) {
-		GroundData groundData = ParkourContext.get(player).groundData();
+	public boolean canEnter(Player player, ParkourContext context) {
+		GroundData groundData = context.groundData();
 		return isBaseValid(player) && groundData.getSlideCooldown() <= 0;
 	}
 
 	@Override
-	public boolean isValid(Player player) {
-		StateData stateData = ParkourContext.get(player).stateData();
+	public boolean isValid(Player player, ParkourContext context) {
+		StateData stateData = context.stateData();
 		return isBaseValid(player) && stateData.getTicksInState() < SLIDE_DURATION;
 	}
 }

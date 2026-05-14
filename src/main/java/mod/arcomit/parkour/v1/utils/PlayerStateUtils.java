@@ -1,8 +1,6 @@
 package mod.arcomit.parkour.v1.utils;
 
-import mod.arcomit.parkour.ServerConfig;
-import net.minecraft.client.player.Input;
-import net.minecraft.client.player.LocalPlayer;
+import mod.arcomit.parkour.ParkourConfig;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 
@@ -27,19 +25,12 @@ public class PlayerStateUtils {
 			&& !player.isSleeping()
 			&& !player.isAutoSpinAttack()
 			&& !player.isFallFlying()
-			&& !player.getAbilities().flying
-			&& (player.getForcedPose() != null || player.getPose() != Pose.SWIMMING);
+			&& !player.getAbilities().flying;
 	}
 
-	/**
-	 * 判断玩家是否正在移动。
-	 *
-	 * @param player 需要判定的玩家实体。
-	 * @return 如果玩家正在移动则返回 true。
-	 */
-	public static boolean isPlayerMoving(LocalPlayer player) {
-		Input input = player.input;
-		return input.forwardImpulse != 0 || input.leftImpulse != 0;
+	public static boolean isAbleToBehavior(Player player) {
+		return isAbleToAction(player)
+			&& (player.getForcedPose() != null || player.getPose() != Pose.SWIMMING);
 	}
 
 	/**
@@ -49,6 +40,6 @@ public class PlayerStateUtils {
 	 * @return 如果玩家坠落时会受到伤害则返回 true。
 	 */
 	public static boolean fallWillTakeDamage(Player player) {
-		return player.fallDistance > ServerConfig.safeFallHeight;
+		return player.fallDistance > ParkourConfig.safeFallHeight;
 	}
 }

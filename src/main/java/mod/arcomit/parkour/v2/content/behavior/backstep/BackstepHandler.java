@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.content.behavior.backstep;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.content.init.PkParkourStates;
+import mod.arcomit.parkour.v2.content.init.ParkourStates;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.StateData;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +24,7 @@ public class BackstepHandler {
 
 			StateData stateData = ParkourContext.get(player).stateData();
 
-			if (stateData.getState() == PkParkourStates.BACKSTEP.get()) {
+			if (stateData.getState() == ParkourStates.BACKSTEP.get()) {
 				event.setCanceled(true);
 			}
 		}

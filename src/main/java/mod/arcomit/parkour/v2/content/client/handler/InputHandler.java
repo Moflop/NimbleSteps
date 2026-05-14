@@ -30,6 +30,7 @@ public class InputHandler {
 		if (jumpActiveData != isJumpKeyActive) {
 			inputData.setJumpKeyActive(player.input.jumping);
 			// 发包给服务端
+			// TODO: 疑似需重构
 		}
 	}
 }

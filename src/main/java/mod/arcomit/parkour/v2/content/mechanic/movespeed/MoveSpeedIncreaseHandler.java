@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.mechanic.movespeed;
 
-import mod.arcomit.parkour.ServerConfig;
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.ParkourMod;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -24,7 +24,7 @@ public class MoveSpeedIncreaseHandler {
 
 	@SubscribeEvent
 	public static void adjustPlayerSpeed(PlayerTickEvent.Post event) {
-		if (!ServerConfig.enableMoveSpeedIncrease) {
+		if (!ParkourConfig.enableMoveSpeedIncrease) {
 			return;
 		}
 
@@ -39,9 +39,9 @@ public class MoveSpeedIncreaseHandler {
 
 		double speedBonus;
 		if (player.isSprinting()) {
-			speedBonus = ServerConfig.sprintSpeedMultiplier - VANILLA_SPEED_MULTIPLIER;
+			speedBonus = ParkourConfig.sprintSpeedMultiplier - VANILLA_SPEED_MULTIPLIER;
 		} else {
-			speedBonus = ServerConfig.walkSpeedMultiplier - VANILLA_SPEED_MULTIPLIER;
+			speedBonus = ParkourConfig.walkSpeedMultiplier - VANILLA_SPEED_MULTIPLIER;
 		}
 
 		AttributeModifier walkModifier = new AttributeModifier(

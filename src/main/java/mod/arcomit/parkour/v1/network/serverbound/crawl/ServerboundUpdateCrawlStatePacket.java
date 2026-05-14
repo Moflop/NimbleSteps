@@ -1,15 +1,12 @@
 package mod.arcomit.parkour.v1.network.serverbound.crawl;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v1.network.clientbound.ClientboundUpdateCrawlStatePacket;
 import mod.arcomit.parkour.v2.core.context.GroundData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
-import mod.arcomit.parkour.v2.core.statemachine.ParkourStateMachine;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**

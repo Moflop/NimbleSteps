@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 //import mod.arcomit.nimblesteps.event.skills.WallRunHandler;
-import mod.arcomit.parkour.v2.content.init.PkAttachmentTypes;
+import mod.arcomit.parkour.v2.content.init.ParkourAttachmentTypes;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,7 +28,7 @@ public class ServerboundEndWallRunPacket implements CustomPacketPayload {
 	public static void handle(ServerboundEndWallRunPacket packet, IPayloadContext context) {
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
-				ParkourContext state = player.getData(PkAttachmentTypes.PARKOUR_CONTEXT);
+				ParkourContext state = player.getData(ParkourAttachmentTypes.PARKOUR_CONTEXT);
 //				WallRunHandler.endWallRun(state);
 			}
 		});

@@ -1,10 +1,8 @@
 package mod.arcomit.parkour.v2.content.behavior.mount;
 
-import mod.arcomit.parkour.v2.content.init.PkParkourStates;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.WallData;
 import mod.arcomit.parkour.v2.core.statemachine.state.AbstractParkourState;
-import mod.arcomit.parkour.v2.core.statemachine.state.IParkourStateTransition;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 
@@ -14,16 +12,6 @@ import net.minecraft.world.entity.player.Player;
  * @author Arcomit
  */
 public class MountState extends AbstractParkourState {
-
-	public MountState() {
-		// 持续时间耗尽时退出 Mount 状态
-		registerTransitions(
-			IParkourStateTransition.onTick(
-				PkParkourStates.DEFAULT::get,
-				player -> !this.isValid(player)
-			)
-		);
-	}
 
 	@Override
 	public void onEnter(Player player, ParkourContext context) {
@@ -39,7 +27,7 @@ public class MountState extends AbstractParkourState {
 	@Override
 	public void onExit(Player player, ParkourContext context) {
 		WallData wallData = ParkourContext.get(player).wallData();
-		wallData.setMountDuration(0);
+		wallData.setMountDuration3DData(0);
 		wallData.setObstaclesHeight(0);
 	}
 
@@ -49,13 +37,13 @@ public class MountState extends AbstractParkourState {
 	}
 
 	@Override
-	public boolean canEnter(Player player) {
+	public boolean canEnter(Player player, ParkourContext context) {
 		return MountLogic.canStartMountFromArmhang(player);
 	}
 
 	@Override
-	public boolean isValid(Player player) {
-		WallData wallData = ParkourContext.get(player).wallData();
-		return wallData.getMountDuration() > 0; // 只要 Duration 还没清零就继续
+	public boolean isValid(Player player, ParkourContext context) {
+		WallData wallData = context.wallData();
+		return wallData.getMountDuration3DData() > 0; // 只要 Duration 还没清零就继续
 	}
 }

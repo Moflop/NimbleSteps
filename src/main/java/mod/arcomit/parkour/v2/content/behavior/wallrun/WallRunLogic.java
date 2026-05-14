@@ -1,21 +1,15 @@
 package mod.arcomit.parkour.v2.content.behavior.wallrun;
 
-import mod.arcomit.parkour.v1.utils.DirectionUtils;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
+import mod.arcomit.parkour.v2.core.context.WallData;
 import mod.arcomit.parkour.v2.core.sensor.AbstractBoxSensor;
 import mod.arcomit.parkour.v2.core.sensor.SensorManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
 
 /**
  * 墙跑核心逻辑
@@ -23,30 +17,34 @@ import java.util.ArrayList;
  * @author Arcomit
  */
 public class WallRunLogic {
-	private static final double ZERO_THRESHOLD = 1.0E-7;
 	private static final double VANILLA_SPRINT_SPEED_MULTIPLIER = 2.15; // 原版疾跑的速度倍率
 	private static final double WALL_ADHESION_FORCE = 0.1; // 墙面吸附力
-	private static final float SOUND_DISTANCE_MULTIPLIER = 0.6F;
-	private static final float SOUND_VOLUME_MULTIPLIER = 0.15F;
+
+	public static void setCollisionDirAndFixedMovementDir(Player player, WallData wallData) {
+		Direction wallCollisionDir = findFirstWallCollisionDirection(player);
+		wallData.setWallRunCollisionDir3DData(wallCollisionDir.get3DDataValue());// 这个方法只在Enter调用，而进入状态的条件就有左右必须有墙，所以不会为null
+		Direction movementDir = player.getDirection();
+		wallData.setWallRunMovementDir3DData(movementDir.get3DDataValue());
+	}
 
 	/**
 	 * 执行墙跑时的物理运动与速度修改
 	 */
-	public static void useWallRunMovement(Player player, ParkourContext context) {
-		Direction facing = player.getDirection();
-		Vec3 runDirection = new Vec3(facing.getStepX(), 0, facing.getStepZ()).normalize();
+	public static void useWallRunMovement(Player player, WallData wallData) {
+		Direction movementDir = Direction.from3DDataValue(wallData.getWallRunMovementDir3DData());
+		Vec3 runDirection = new Vec3(movementDir.getStepX(), 0, movementDir.getStepZ()).normalize();
 
 		double attributeSpeed = player.getAttributeValue(Attributes.MOVEMENT_SPEED);
 		double targetSpeed = attributeSpeed * VANILLA_SPRINT_SPEED_MULTIPLIER;
 
-		Direction wallDirection = findAvailableWallDirection(player);
-		if (wallDirection != null) {
+		Direction wallCollisionDirection = Direction.from3DDataValue(wallData.getWallRunCollisionDir3DData());
+		if (wallCollisionDirection != null) {
+			// 向固定的运动方向移动
 			player.setDeltaMovement(runDirection.scale(targetSpeed));
 
 			// 墙面吸附
-			Vec3 wallNormal = new Vec3(wallDirection.getStepX(), 0, wallDirection.getStepZ());
+			Vec3 wallNormal = new Vec3(wallCollisionDirection.getStepX(), 0, wallCollisionDirection.getStepZ());
 			Vec3 adhesionForce = wallNormal.scale(WALL_ADHESION_FORCE);
-
 			boolean wasOnGround = player.onGround();
 			player.move(MoverType.PLAYER, adhesionForce);
 			if (wasOnGround) {
@@ -56,79 +54,56 @@ public class WallRunLogic {
 
 			// 重置跌落伤害
 			player.resetFallDistance();
-
-			// 播放音效
-			playWallRunSound(player, wallDirection);
 		}
 	}
 
-	private static void playWallRunSound(Player player, Direction wallDirection) {
-		double deltaX = player.getX() - player.xo;
-		double deltaY = player.getY() - player.yo;
-		double deltaZ = player.getZ() - player.zo;
-		double actualDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-
-		if (actualDistance < ZERO_THRESHOLD) {
-			return;
-		}
-
-		float distanceTraveled = (float) actualDistance * SOUND_DISTANCE_MULTIPLIER;
-		player.moveDist += distanceTraveled;
-
-		if (player.moveDist <= player.nextStep) {
-			return;
-		}
-		player.nextStep = player.moveDist + 1.0F;
-
-		BlockPos playerPos = player.blockPosition();
-		BlockPos wallPos = playerPos.relative(wallDirection);
-		Level level = player.level();
-		BlockState blockState = level.getBlockState(wallPos);
-
-		if (blockState.isAir()) {
-			return;
-		}
-
-		SoundType soundType = blockState.getSoundType(level, wallPos, player);
-		float volume = soundType.getVolume() * SOUND_VOLUME_MULTIPLIER;
-		float pitch = soundType.getPitch();
-
-		level.playSound(
-			player,
-			wallPos.getX(),
-			wallPos.getY(),
-			wallPos.getZ(),
-			soundType.getStepSound(),
-			SoundSource.PLAYERS,
-			volume,
-			pitch
-		);
-	}
-
-	/**
-	 * 利用 SensorManager 获取玩家可进行墙跑的墙壁方向 (左侧或右侧)
-	 */
-	public static Direction findAvailableWallDirection(Player player) {
-		SensorManager sensorManager = SensorManager.get(player);
-		if (sensorManager == null) return null;
-
+	public static Direction findFirstWallCollisionDirection(Player player) {
+		SensorManager sm = SensorManager.get(player);
 		Direction facing = player.getDirection();
 		Direction right = facing.getClockWise();
 		Direction left = facing.getCounterClockWise();
 
-		ArrayList<Direction> collisionDirections = new ArrayList<>(2);
+		boolean hitRight = checkWallCollision(player, sm, right);
+		boolean hitLeft = checkWallCollision(player, sm, left);
 
-		// 检查右侧
-		if (checkWallCollision(player, sensorManager, right)) {
-			collisionDirections.add(right);
+		if (hitRight && hitLeft) {
+			// 内联距离比较：取距离玩家更近的那一侧墙壁
+			return getCloserDirection(player, right, left);
+		} else if (hitRight) {
+			return right;
+		} else if (hitLeft) {
+			return left;
 		}
+		return null;
+	}
 
-		// 检查左侧
-		if (checkWallCollision(player, sensorManager, left)) {
-			collisionDirections.add(left);
+	public static boolean wallCollisionIsValid(Player player, ParkourContext context) {
+		Direction wallDir = Direction.from3DDataValue(context.wallData().getWallRunCollisionDir3DData());
+		if (wallDir == null) {
+			return false;
 		}
+		SensorManager sensorManager = SensorManager.get(player);
+		return checkWallCollision(player, sensorManager, wallDir);
+	}
 
-		return DirectionUtils.getClosestDirection(player, collisionDirections);
+	/**
+	 * 在 left 和 right 两个方向中，返回与玩家水平距离更近的那个。
+	 * 距离计算逻辑与 {@code DirectionUtils.getClosestDirection} 一致。
+	 */
+	private static Direction getCloserDirection(Player player, Direction dirA, Direction dirB) {
+		BlockPos playerPos = player.blockPosition();
+		Vec3 playerVec = player.position();
+
+		double distSqA = horizontalDistanceSq(playerVec, playerPos.relative(dirA));
+		double distSqB = horizontalDistanceSq(playerVec, playerPos.relative(dirB));
+
+		return distSqA < distSqB ? dirA : dirB;
+	}
+
+	private static double horizontalDistanceSq(Vec3 playerVec, BlockPos blockPos) {
+		double dx = playerVec.x - blockPos.getCenter().x;
+		double dz = playerVec.z - blockPos.getCenter().z;
+		return dx * dx + dz * dz;
 	}
 
 	/**
@@ -142,5 +117,21 @@ public class WallRunLogic {
 		return headSensor != null && feetSensor != null
 			&& headSensor.isColliding(player)
 			&& feetSensor.isColliding(player);
+	}
+
+	public static boolean isLookingInMovementDirection(Player player, WallData wallData) {
+		Direction movementDir = Direction.from3DDataValue(wallData.getWallRunMovementDir3DData());
+		Vec3 lookVec = player.getLookAngle();
+		float playerYaw = (float) Math.toDegrees(Math.atan2(-lookVec.x, lookVec.z));
+		playerYaw = (playerYaw + 360.0f) % 360.0f;
+
+		float targetYaw = movementDir.toYRot();
+		targetYaw = (targetYaw + 360.0f) % 360.0f;
+
+		float yawDifference = Math.abs(playerYaw - targetYaw);
+		if (yawDifference > 180.0f) {
+			yawDifference = 360.0f - yawDifference;
+		}
+		return yawDifference <= 90.0f;
 	}
 }

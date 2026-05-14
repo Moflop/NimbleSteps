@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.mechanic.freestyle;
 
-import mod.arcomit.parkour.ServerConfig;
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
@@ -37,7 +37,7 @@ public class FreestyleHandler {
 	}
 
 	public static boolean canFreestyle(Player player, ParkourContext state) {
-		return ServerConfig.enableFreestyle
+		return ParkourConfig.enableFreestyle
 			&& player.isSwimming()
 			&& !player.isUnderWater()
 			&& PlayerStateUtils.isAbleToAction(player);

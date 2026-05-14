@@ -31,7 +31,7 @@ public record BroadcastWallSlideDirS2CPayload(int entityId, int direction) imple
 				Entity entity = level.getEntity(packet.entityId());
 				// 只需给其他人(RemotePlayer)更新方向。LocalPlayer 自己在本地早就更新了。
 				if (entity instanceof Player player && !player.isLocalPlayer()) {
-					ParkourContext.get(player).wallData().setWallSlideDirection(packet.direction());
+					ParkourContext.get(player).wallData().setWallSlideCollisionDir3DData(packet.direction());
 				}
 			}
 		});

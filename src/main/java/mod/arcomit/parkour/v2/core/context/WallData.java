@@ -20,47 +20,43 @@ import net.minecraft.network.codec.StreamCodec;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WallData {
-	private int wallRunCount = 0;
+	private int wallRunCollisionDir3DData = -1;
+	private int wallRunMovementDir3DData = -1;
 
-	private int jumpReleaseGraceTicks = 0;
-	private int wallSlideDirection = -1;
+	private int wallSlideCollisionDir3DData = -1;
 
 	private boolean armHanging = false;
-	private int armHangingDirection = -1;
+	private int armHangingDir = -1;
 
-	private boolean wallClimbed = false;
-
-	private int mountDuration = 0;
+	private int mountDuration3DData = 0;
 	private double obstaclesHeight = 0.0;
 
-	public boolean isMounting() { return mountDuration > 0; }
+	public boolean isMounting() { return mountDuration3DData > 0; }
 
 	public void resetArmHangingDirection() {
-		this.armHangingDirection = -1;
+		this.armHangingDir = -1;
 	}
 
 	public static final Codec<WallData> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(
-			Codec.INT.optionalFieldOf("wallRunCount", 0).forGetter(WallData::getWallRunCount),
-			Codec.INT.optionalFieldOf("jumpReleaseGraceTicks", 0).forGetter(WallData::getJumpReleaseGraceTicks),
-			Codec.INT.optionalFieldOf("wallSlideDirection", -1).forGetter(WallData::getWallSlideDirection),
+			Codec.INT.optionalFieldOf("wallRunCollisionDir3DData", 0).forGetter(WallData::getWallRunCollisionDir3DData),
+			Codec.INT.optionalFieldOf("wallRunMovementDir3DData", 0).forGetter(WallData::getWallRunMovementDir3DData),
+			Codec.INT.optionalFieldOf("wallSlideCollisionDir3DData", -1).forGetter(WallData::getWallSlideCollisionDir3DData),
 			Codec.BOOL.optionalFieldOf("isArmHanging", false).forGetter(WallData::isArmHanging),
-			Codec.INT.optionalFieldOf("armHangingDirection", -1).forGetter(WallData::getArmHangingDirection),
-			Codec.BOOL.optionalFieldOf("hasWallClimbed", false).forGetter(WallData::isWallClimbed),
-			Codec.INT.optionalFieldOf("mountDuration", 0).forGetter(WallData::getMountDuration),
+			Codec.INT.optionalFieldOf("armHangingDir3DData", -1).forGetter(WallData::getArmHangingDir),
+			Codec.INT.optionalFieldOf("mountDuration", 0).forGetter(WallData::getMountDuration3DData),
 			Codec.DOUBLE.optionalFieldOf("obstaclesHeight", 0.0).forGetter(WallData::getObstaclesHeight)
 		).apply(instance, WallData::new)
 	);
 
 	public static final StreamCodec<ByteBuf, WallData> STREAM_CODEC = StreamCodec.of(
 		(buf, data) -> {
-			ByteBufCodecs.VAR_INT.encode(buf, data.getWallRunCount());
-			ByteBufCodecs.VAR_INT.encode(buf, data.getJumpReleaseGraceTicks());
-			ByteBufCodecs.VAR_INT.encode(buf, data.getWallSlideDirection());
+			ByteBufCodecs.VAR_INT.encode(buf, data.getWallRunCollisionDir3DData());
+			ByteBufCodecs.VAR_INT.encode(buf, data.getWallRunMovementDir3DData());
+			ByteBufCodecs.VAR_INT.encode(buf, data.getWallSlideCollisionDir3DData());
 			ByteBufCodecs.BOOL.encode(buf, data.isArmHanging());
-			ByteBufCodecs.VAR_INT.encode(buf, data.getArmHangingDirection());
-			ByteBufCodecs.BOOL.encode(buf, data.isWallClimbed());
-			ByteBufCodecs.VAR_INT.encode(buf, data.getMountDuration());
+			ByteBufCodecs.VAR_INT.encode(buf, data.getArmHangingDir());
+			ByteBufCodecs.VAR_INT.encode(buf, data.getMountDuration3DData());
 			ByteBufCodecs.DOUBLE.encode(buf, data.getObstaclesHeight());
 		},
 		buf -> new WallData(
@@ -69,20 +65,18 @@ public class WallData {
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.BOOL.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
-			ByteBufCodecs.BOOL.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.DOUBLE.decode(buf)
 		)
 	);
 
 	public void copyFrom(WallData other) {
-		this.wallRunCount = other.wallRunCount;
-		this.jumpReleaseGraceTicks = other.jumpReleaseGraceTicks;
-		this.wallSlideDirection = other.wallSlideDirection;
+		this.wallRunCollisionDir3DData = other.wallRunCollisionDir3DData;
+		this.wallRunMovementDir3DData = other.wallRunMovementDir3DData;
+		this.wallSlideCollisionDir3DData = other.wallSlideCollisionDir3DData;
 		this.armHanging = other.armHanging;
-		this.armHangingDirection = other.armHangingDirection;
-		this.wallClimbed = other.wallClimbed;
-		this.mountDuration = other.mountDuration;
+		this.armHangingDir = other.armHangingDir;
+		this.mountDuration3DData = other.mountDuration3DData;
 		this.obstaclesHeight = other.obstaclesHeight;
 	}
 }

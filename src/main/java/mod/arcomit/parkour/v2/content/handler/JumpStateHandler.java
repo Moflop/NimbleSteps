@@ -3,11 +3,10 @@ package mod.arcomit.parkour.v2.content.handler;
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.core.context.JumpData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
-import net.minecraft.client.player.LocalPlayer;
+import mod.arcomit.parkour.v2.core.context.WallData;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
@@ -18,23 +17,26 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  */
 @EventBusSubscriber(modid = ParkourMod.MODID)
 public class JumpStateHandler {
-	@SubscribeEvent
-	public static void onJump(LivingEvent.LivingJumpEvent event) {
-		if (event.getEntity() instanceof LocalPlayer player) {
-			JumpData jumpData = ParkourContext.get(player).jumpData();
-			jumpData.setTicksSinceLastJump(0);
-			//TODO:优化改进
-			jumpData.setJumped(true);
-		}
-	}
 
 	//TODO:优化改进
 	@SubscribeEvent
-	public static void onPlayerTick(PlayerTickEvent.Post event) {
+	public static void onGround(PlayerTickEvent.Post event) {
 		Player player = event.getEntity();
 		JumpData jumpData = ParkourContext.get(player).jumpData();
-		if (player.onGround() && jumpData.isJumped()) {
-			jumpData.setJumped(false);
+		WallData wallData = ParkourContext.get(player).wallData();
+		if (player.onGround()) {
+			if (jumpData.getLastViewWallJumpDir3DData() != -1) {
+				jumpData.resetLastLookAngleWallJumpDir3DData();
+			}
+			if (jumpData.getLastUpWallJumpDir3DData() != -1) {
+				jumpData.resetLastUpwardWallJumpDir3DData();
+			}
+			if (jumpData.getLastParallelWallJumpDir3DData() != -1) {
+				jumpData.resetLastForwardWallJumpDir3DData();
+			}
+			if (wallData.getWallRunCollisionDir3DData() != -1) {
+				wallData.setWallRunCollisionDir3DData(-1);
+			}
 		}
 	}
 }

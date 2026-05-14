@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.content.behavior.armhang;
 
 import mod.arcomit.parkour.v2.content.behavior.mount.MountLogic;
-import mod.arcomit.parkour.v2.content.init.PkParkourStates;
+import mod.arcomit.parkour.v2.content.init.ParkourStates;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.WallData;
 import mod.arcomit.parkour.v2.core.statemachine.state.AbstractParkourState;
@@ -16,27 +16,23 @@ import net.minecraft.world.entity.player.Player;
  *
  * @author Arcomit
  */
+// TODO:重构
 public class ArmhangState extends AbstractParkourState {
 
 	public ArmhangState() {
 		registerTransitions(
 			// 优先判断：如果按下跳跃键，且满足上墙条件，则转换到 MOUNT
 			IParkourStateTransition.onTick(
-				PkParkourStates.MOUNT::get,
-				player -> {
-					ParkourContext context = ParkourContext.get(player);
+				ParkourStates.MOUNT::get,
+				(player, context) -> {
 					// 判断本地或同步的输入
 					boolean isJumping = player instanceof LocalPlayer lp ? lp.input.jumping : context.inputData().isJumpKeyActive();
 					return isJumping && MountLogic.canStartMountFromArmhang(player);
 				}
 			),
 			IParkourStateTransition.onTick(
-				PkParkourStates.DEFAULT::get,
-				player -> !this.isValid(player)
-			),
-			IParkourStateTransition.onTick(
-				PkParkourStates.DEFAULT::get,
-				Player::isShiftKeyDown
+				ParkourStates.DEFAULT::get,
+				(player, context) -> player.isShiftKeyDown()
 			)
 		);
 	}
@@ -45,7 +41,7 @@ public class ArmhangState extends AbstractParkourState {
 	public void onEnter(Player player, ParkourContext context) {
 		WallData wallData = context.wallData();
 		wallData.setArmHanging(true);
-		wallData.setArmHangingDirection(player.getDirection().get3DDataValue());
+		wallData.setArmHangingDir(player.getDirection().get3DDataValue());
 
 		if (player instanceof LocalPlayer localPlayer) {
 			localPlayer.sendPosition();
@@ -72,15 +68,15 @@ public class ArmhangState extends AbstractParkourState {
 	}
 
 	@Override
-	public boolean canEnter(Player player) {
+	public boolean canEnter(Player player, ParkourContext context) {
 		return ArmhangLogic.canStartArmhang(player)
 			&& ArmhangLogic.isClimbableAtDirection(player, player.getDirection());
 	}
 
 	@Override
-	public boolean isValid(Player player) {
-		WallData wallData = ParkourContext.get(player).wallData();
-		Direction direction = Direction.from3DDataValue(wallData.getArmHangingDirection());
+	public boolean isValid(Player player, ParkourContext context) {
+		WallData wallData = context.wallData();
+		Direction direction = Direction.from3DDataValue(wallData.getArmHangingDir());
 
 		return ArmhangLogic.isClimbableAtDirection(player, direction);
 	}

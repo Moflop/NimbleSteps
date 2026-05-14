@@ -1,8 +1,8 @@
 package mod.arcomit.parkour.v1.network.serverbound.roll;
 
 import io.netty.buffer.ByteBuf;
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.ServerConfig;
 import mod.arcomit.parkour.v2.core.context.GroundData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import net.minecraft.network.codec.StreamCodec;
@@ -30,7 +30,7 @@ public class ServerboundSetLandingRollWindowPacket implements CustomPacketPayloa
 		context.enqueueWork(() -> {
 			if (context.player() instanceof ServerPlayer player) {
 				GroundData groundData = ParkourContext.get(player).groundData();
-				groundData.setLandingRollWindow(ServerConfig.landingRollWindow);
+				groundData.setLandingRollWindow(ParkourConfig.landingRollWindow);
 			}
 		});
 	}

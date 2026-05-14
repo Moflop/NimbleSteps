@@ -3,7 +3,7 @@ package mod.arcomit.parkour.v2.core.context;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import mod.arcomit.parkour.v2.content.init.PkAttachmentTypes;
+import mod.arcomit.parkour.v2.content.init.ParkourAttachmentTypes;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.Player;
 
@@ -45,10 +45,10 @@ public record ParkourContext(GroundData groundData, WallData wallData, JumpData 
 	);
 
 	public static void set(Player player, ParkourContext state) {
-		player.setData(PkAttachmentTypes.PARKOUR_CONTEXT, state);
+		player.setData(ParkourAttachmentTypes.PARKOUR_CONTEXT, state);
 	}
 
 	public static ParkourContext get(Player player) {
-		return player.getData(PkAttachmentTypes.PARKOUR_CONTEXT);
+		return player.getData(ParkourAttachmentTypes.PARKOUR_CONTEXT);
 	}
 }

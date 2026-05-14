@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.mechanic.shallowswim;
 
-import mod.arcomit.parkour.ServerConfig;
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v1.utils.PlayerStateUtils;
@@ -55,7 +55,7 @@ public class ShallowSwimmingHandler {
 	}
 
 	private static boolean canShallowSwim(Player player, ParkourContext state) {
-		return ServerConfig.enableShallowSwimming
+		return ParkourConfig.enableShallowSwimming
 			&& player.isInWater()
 			&& PlayerStateUtils.isAbleToAction(player);
 	}

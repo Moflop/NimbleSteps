@@ -1,6 +1,6 @@
 package mod.arcomit.parkour.v2.content.behavior.mount;
 
-import mod.arcomit.parkour.ServerConfig;
+import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.v1.utils.TestUtils;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.WallData;
@@ -26,11 +26,11 @@ public class MountLogic {
 	 * 判断垂挂状态下是否能触发上墙
 	 */
 	public static boolean canStartMountFromArmhang(Player player) {
-		if (!ServerConfig.enableMount) return false;
+		if (!ParkourConfig.enableMount) return false;
 
 		ParkourContext context = ParkourContext.get(player);
 		WallData wallData = context.wallData();
-		Direction armhangDir = Direction.from3DDataValue(wallData.getArmHangingDirection());
+		Direction armhangDir = Direction.from3DDataValue(wallData.getArmHangingDir());
 
 		if (armhangDir != player.getDirection()) {
 			return false; // 必须面向墙壁
@@ -49,13 +49,13 @@ public class MountLogic {
 	 */
 	public static void startMount(Player player, ParkourContext context) {
 		WallData wallData = context.wallData();
-		Direction armhangDir = Direction.from3DDataValue(wallData.getArmHangingDirection());
+		Direction armhangDir = Direction.from3DDataValue(wallData.getArmHangingDir());
 		Vec3 mountVec = new Vec3(armhangDir.getStepX(), armhangDir.getStepY(), armhangDir.getStepZ()).scale(OBSTACLES_CHECK_DISTANCE);
 
 		double obstaclesHeight = TestUtils.getObstaclesHeight(player, mountVec);
 		double mountDurationTick = MOUNT_DURATION_TICKS * (obstaclesHeight / 2.0);
 
-		wallData.setMountDuration((int) Math.max(5, mountDurationTick));
+		wallData.setMountDuration3DData((int) Math.max(5, mountDurationTick));
 		wallData.setObstaclesHeight(obstaclesHeight);
 	}
 
@@ -76,7 +76,7 @@ public class MountLogic {
 		int rapidRiseTicks = Math.max(1, (int)(totalDuration * MOUNTING_RAPID_RISE_TICK_MULTIPLIER));
 		int slowRiseTicks = Math.max(1, (int)(totalDuration - rapidRiseTicks));
 
-		double currentDuration = wallData.getMountDuration();
+		double currentDuration = wallData.getMountDuration3DData();
 		double totalRiseHeight = wallData.getObstaclesHeight() + MOUNT_RISE_EXTRA_HEIGHT;
 
 		if (currentDuration > slowRiseTicks) {
@@ -85,6 +85,6 @@ public class MountLogic {
 			player.move(MoverType.PLAYER, new Vec3(0, (totalRiseHeight * (1 - MOUNTING_RAPID_RISE_HEIGHT_MULTIPLIER)) / slowRiseTicks, 0));
 		}
 
-		wallData.setMountDuration(wallData.getMountDuration() - 1);
+		wallData.setMountDuration3DData(wallData.getMountDuration3DData() - 1);
 	}
 }

@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import mod.arcomit.parkour.v2.content.init.PkParkourStates;
-import mod.arcomit.parkour.v2.content.init.PkRegistries;
+import mod.arcomit.parkour.v2.content.init.ParkourStates;
+import mod.arcomit.parkour.v2.content.init.ParkourRegistries;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -23,7 +23,7 @@ public class StateData {
 	// 核心数据 (Source of Truth)
 	// 永远只存安全的基础数据类型，防止在类加载时触发注册表崩溃
 	@Getter
-	private ResourceLocation stateId = PkParkourStates.DEFAULT.getId();
+	private ResourceLocation stateId = ParkourStates.DEFAULT.getId();
 	@Getter @Setter
 	private int ticksInState = 0;
 	@Getter @Setter
@@ -36,7 +36,7 @@ public class StateData {
 	private transient IParkourState lastTickState = null;
 
 	public StateData(ResourceLocation stateId, int ticksInState) {
-		this.stateId = stateId != null ? stateId : PkParkourStates.DEFAULT.getId();
+		this.stateId = stateId != null ? stateId : ParkourStates.DEFAULT.getId();
 		this.ticksInState = ticksInState;
 	}
 
@@ -45,9 +45,9 @@ public class StateData {
 	 */
 	public IParkourState getState() {
 		if (this.cachedState == null) {
-			this.cachedState = PkRegistries.PARKOUR_STATE_REGISTRY.get(this.stateId);
+			this.cachedState = ParkourRegistries.PARKOUR_STATE_REGISTRY.get(this.stateId);
 			if (this.cachedState == null) {
-				this.cachedState = PkParkourStates.DEFAULT.get();
+				this.cachedState = ParkourStates.DEFAULT.get();
 			}
 		}
 		return this.cachedState;
@@ -58,8 +58,8 @@ public class StateData {
 	 */
 	public void setState(IParkourState newState) {
 		this.cachedState = newState;
-		ResourceLocation key = PkRegistries.PARKOUR_STATE_REGISTRY.getKey(newState);
-		this.stateId = key != null ? key : PkParkourStates.DEFAULT.getId();
+		ResourceLocation key = ParkourRegistries.PARKOUR_STATE_REGISTRY.getKey(newState);
+		this.stateId = key != null ? key : ParkourStates.DEFAULT.getId();
 	}
 
 	public static final StreamCodec<ByteBuf, StateData> STREAM_CODEC = StreamCodec.composite(

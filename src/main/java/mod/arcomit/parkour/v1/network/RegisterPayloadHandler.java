@@ -6,7 +6,7 @@ import mod.arcomit.parkour.v1.network.serverbound.crawl.ServerboundUpdateCrawlSt
 import mod.arcomit.parkour.v1.network.serverbound.jump.ServerboundUseSwimmingJumpPacket;
 import mod.arcomit.parkour.v1.network.serverbound.jump.ServerboundSupportWallJumpPacket;
 import mod.arcomit.parkour.v1.network.serverbound.jump.ServerboundMountPacket;
-import mod.arcomit.parkour.v1.network.serverbound.jump.ServerboundWallJumpPacket;
+import mod.arcomit.parkour.v2.content.action.walljump.network.WallJumpC2SPayload;
 import mod.arcomit.parkour.v1.network.serverbound.roll.ServerboundSetLandingRollWindowPacket;
 import mod.arcomit.parkour.v1.network.serverbound.slide.ServerboundCancelSlidePacket;
 import mod.arcomit.parkour.v1.network.serverbound.slide.ServerboundUseSlidePacket;
@@ -19,8 +19,8 @@ import mod.arcomit.parkour.v1.network.serverbound.wallrun.ServerboundEndWallRunP
 import mod.arcomit.parkour.v1.network.serverbound.wallrun.ServerboundStartWallRunPacket;
 import mod.arcomit.parkour.v1.network.serverbound.wallslide.ServerboundUpdateWallSlideStatePacket;
 import mod.arcomit.parkour.v2.content.behavior.wallslide.network.BroadcastWallSlideDirS2CPayload;
-import mod.arcomit.parkour.v2.core.animation.player.network.BroadcastPlayOneOffAnimS2CPayload;
-import mod.arcomit.parkour.v2.core.animation.player.network.RequestPlayOneOffAnimC2SPayload;
+import mod.arcomit.parkour.v2.core.client.animation.player.network.BroadcastPlayOneOffAnimS2CPayload;
+import mod.arcomit.parkour.v2.core.client.animation.player.network.RequestPlayOneOffAnimC2SPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.BroadcastStateChangeS2CPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.RequestStateTransitionC2SPayload;
 import mod.arcomit.parkour.v2.core.statemachine.network.ForceLocalPlayerStateS2CPayload;
@@ -108,9 +108,9 @@ public class RegisterPayloadHandler {
 		);
 
 		registrar.playToServer(
-			ServerboundWallJumpPacket.TYPE,
-			ServerboundWallJumpPacket.STREAM_CODEC,
-			ServerboundWallJumpPacket::handle
+			WallJumpC2SPayload.TYPE,
+			WallJumpC2SPayload.STREAM_CODEC,
+			WallJumpC2SPayload::handle
 		);
 		registrar.playToServer(
 			ServerboundSupportWallJumpPacket.TYPE,
