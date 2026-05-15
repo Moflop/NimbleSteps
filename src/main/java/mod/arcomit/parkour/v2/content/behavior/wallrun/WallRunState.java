@@ -23,7 +23,6 @@ import net.minecraft.world.entity.player.Player;
  * * @author Arcomit
  */
 public class WallRunState extends AbstractParkourState {
-	public static final int WALL_RUN_GRACE_PERIOD = 6; // 松开跳跃键后最大墙跑持续时间
 	public static final int MAX_TICKS_SINCE_JUMP = 15; // 在跳跃后的15个刻之内才能开始墙跑
 	public static final double ZERO_THRESHOLD = 1.0E-7;
 
@@ -143,6 +142,6 @@ public class WallRunState extends AbstractParkourState {
 		}
 		WallData wallData = context.wallData();
 		Direction movementDir = Direction.from3DDataValue(wallData.getWallRunMovementDir3DData());
-		return PlayerDirectionUtils.isLookingInDirection_Horizontal(player, movementDir, 90);
+		return PlayerDirectionUtils.isLookingInDirection_Horizontal(player, movementDir, 60);
 	}
 }

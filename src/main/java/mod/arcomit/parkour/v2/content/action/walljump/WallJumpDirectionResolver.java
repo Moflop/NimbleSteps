@@ -3,7 +3,6 @@ package mod.arcomit.parkour.v2.content.action.walljump;
 import mod.arcomit.parkour.v2.content.init.ParkourStates;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.WallData;
-import mod.arcomit.parkour.v2.core.sensor.SensorManager;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -23,7 +22,7 @@ public class WallJumpDirectionResolver {
 			WallData wallData = context.wallData();
 			return Direction.from3DDataValue(wallData.getWallSlideCollisionDir3DData());
 		} else if (state == ParkourStates.DEFAULT.get() || state == ParkourStates.WALL_CLIMB.get()) {
-			return WallJumpLogic.findClosestCollisionDir(player, SensorManager.get(player));
+			return WallJumpLogic.findClosestCollisionDir(player);
 		}
 		// 为未来垂挂预留扩展点
 		// if (state == ParkourStates.ARMHANG.get()) {

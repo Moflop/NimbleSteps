@@ -2,7 +2,7 @@ package mod.arcomit.parkour.v2.content.init;
 
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
-import mod.arcomit.parkour.v2.core.sensor.SensorManager;
+import mod.arcomit.parkour.v2.core.sensor.v3.SensorDataManager;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -28,9 +28,9 @@ public class ParkourAttachmentTypes {
 				.build()
 	);
 
-	public static final Supplier<AttachmentType<SensorManager>> SENSOR_MANAGER =
-		ATTACHMENT_TYPES.register("sensor_manager", () ->
-			AttachmentType.builder(SensorManager::new)
+	public static final Supplier<AttachmentType<SensorDataManager>> SENSOR_DATA_MANAGER =
+		ATTACHMENT_TYPES.register("sensor_data_manager", () ->
+			AttachmentType.builder(SensorDataManager::new)
 				.build()
 		);
 

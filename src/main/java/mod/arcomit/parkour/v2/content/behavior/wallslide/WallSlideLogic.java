@@ -2,9 +2,8 @@ package mod.arcomit.parkour.v2.content.behavior.wallslide;
 
 import mod.arcomit.parkour.v1.utils.DirectionUtils;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
-import mod.arcomit.parkour.v2.core.sensor.AbstractBoxSensor;
-import mod.arcomit.parkour.v2.core.sensor.SensorManager;
 import mod.arcomit.parkour.v2.content.behavior.wallslide.network.BroadcastWallSlideDirS2CPayload;
+import mod.arcomit.parkour.v2.core.sensor.v3.impl.HeadFeetSensor;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.MoverType;
@@ -71,16 +70,14 @@ public class WallSlideLogic {
 	 * 利用 SensorManager 查找当前哪一侧的墙壁是合法的，优先检测缓存方向
 	 */
 	public static Direction findAvailableWallDirection(Player player) {
-		SensorManager sensorManager = SensorManager.get(player);
-
 		ParkourContext context = ParkourContext.get(player);
 		int cachedDirIndex = context.wallData().getWallSlideCollisionDir3DData();
 
 		// 优先检测当前缓存的滑墙方向是否依然有效
 		if (cachedDirIndex >= 0 && cachedDirIndex <= 5) {
 			Direction cachedDir = Direction.from3DDataValue(cachedDirIndex);
-			if (cachedDir != null && checkWallCollision(player, sensorManager, cachedDir)) {
-				return cachedDir; // 缓存方向依然有效，直接返回
+			if (cachedDir != null && checkWallCollision(player, cachedDir)) {
+				return cachedDir;
 			}
 		}
 
@@ -88,7 +85,7 @@ public class WallSlideLogic {
 		ArrayList<Direction> collisionDirections = new ArrayList<>(4);
 
 		for (Direction dir : Direction.Plane.HORIZONTAL) {
-			if (checkWallCollision(player, sensorManager, dir)) {
+			if (checkWallCollision(player, dir)) {
 				collisionDirections.add(dir);
 			}
 		}
@@ -96,15 +93,7 @@ public class WallSlideLogic {
 		return DirectionUtils.getClosestDirection(player, collisionDirections);
 	}
 
-	/**
-	 * 辅助方法：检测特定方向的墙壁碰撞
-	 */
-	private static boolean checkWallCollision(Player player, SensorManager sensorManager, Direction dir) {
-		AbstractBoxSensor headSensor = sensorManager.getSensor("head_wall_" + dir.getName());
-		AbstractBoxSensor feetSensor = sensorManager.getSensor("feet_wall_" + dir.getName());
-
-		return headSensor != null && feetSensor != null
-			&& headSensor.isColliding(player)
-			&& feetSensor.isColliding(player);
+	private static boolean checkWallCollision(Player player, Direction dir) {
+		return HeadFeetSensor.isColliding(player, dir);
 	}
 }

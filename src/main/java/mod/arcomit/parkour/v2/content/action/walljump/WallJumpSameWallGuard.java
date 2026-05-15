@@ -1,7 +1,6 @@
 package mod.arcomit.parkour.v2.content.action.walljump;
 
 import mod.arcomit.parkour.v2.core.context.JumpData;
-import mod.arcomit.parkour.v2.core.sensor.SensorManager;
 import net.minecraft.world.entity.player.Player;
 
 /**
@@ -22,8 +21,7 @@ public class WallJumpSameWallGuard {
 	}
 
 	static boolean isAgainstSingleWall(Player player) {
-		SensorManager sm = SensorManager.get(player);
-		return WallJumpLogic.findCollisionDirs(player, sm).size() == 1;
+		return WallJumpLogic.findCollisionDirs(player).size() == 1;
 	}
 
 	static void recordLastJumpWall(JumpData data, JumpType type, int wallDirValue) {

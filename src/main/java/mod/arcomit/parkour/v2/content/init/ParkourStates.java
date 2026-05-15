@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.v2.content.init;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.v2.content.behavior.armhang.ArmhangState;
+//import mod.arcomit.parkour.v2.content.behavior.armhang.ArmhangState;
 import mod.arcomit.parkour.v2.content.behavior.backstep.BackstepState;
 import mod.arcomit.parkour.v2.content.behavior.base.DefaultState;
 import mod.arcomit.parkour.v2.content.behavior.crawl.CrawlState;
@@ -41,7 +41,7 @@ public class ParkourStates {
 
 	public static final DeferredHolder<IParkourState, WallClimbState> WALL_CLIMB = PARKOUR_STATES.register("wall_climb", WallClimbState::new);
 
-	public static final DeferredHolder<IParkourState, ArmhangState> ARMHANG = PARKOUR_STATES.register("armhang", ArmhangState::new);
+//	public static final DeferredHolder<IParkourState, ArmhangState> ARMHANG = PARKOUR_STATES.register("armhang", ArmhangState::new);
 
 	public static final DeferredHolder<IParkourState, MountState> MOUNT = PARKOUR_STATES.register("mount", MountState::new);
 

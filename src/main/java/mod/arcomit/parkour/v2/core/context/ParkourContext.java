@@ -44,8 +44,8 @@ public record ParkourContext(GroundData groundData, WallData wallData, JumpData 
 		ParkourContext::new
 	);
 
-	public static void set(Player player, ParkourContext state) {
-		player.setData(ParkourAttachmentTypes.PARKOUR_CONTEXT, state);
+	public static void set(Player player, ParkourContext context) {
+		player.setData(ParkourAttachmentTypes.PARKOUR_CONTEXT, context);
 	}
 
 	public static ParkourContext get(Player player) {

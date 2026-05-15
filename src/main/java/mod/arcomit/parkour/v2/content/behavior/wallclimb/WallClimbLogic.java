@@ -3,8 +3,7 @@ package mod.arcomit.parkour.v2.content.behavior.wallclimb;
 import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.proxy.ParkourProxies;
-import mod.arcomit.parkour.v2.core.sensor.AbstractBoxSensor;
-import mod.arcomit.parkour.v2.core.sensor.SensorManager;
+import mod.arcomit.parkour.v2.core.sensor.v3.impl.HeadFeetSensor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -58,16 +57,8 @@ public class WallClimbLogic {
 	 * 检查玩家正前方是否满足爬墙的碰撞条件
 	 */
 	public static boolean checkWallCollision(Player player) {
-		SensorManager sensorManager = SensorManager.get(player);
-		if (sensorManager == null) return false;
-
 		Direction facing = player.getDirection();
-		AbstractBoxSensor headSensor = sensorManager.getSensor("head_wall_" + facing.getName());
-		AbstractBoxSensor feetSensor = sensorManager.getSensor("feet_wall_" + facing.getName());
-
-		return headSensor != null && feetSensor != null
-			&& headSensor.isColliding(player)
-			&& feetSensor.isColliding(player);
+		return HeadFeetSensor.isColliding(player, facing);
 	}
 
 	/**

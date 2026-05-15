@@ -6,8 +6,8 @@ import mod.arcomit.parkour.v2.content.init.ParkourStates;
 import mod.arcomit.parkour.v2.core.context.JumpData;
 import mod.arcomit.parkour.v2.core.context.ParkourContext;
 import mod.arcomit.parkour.v2.core.context.WallData;
-import mod.arcomit.parkour.v2.core.sensor.AbstractBoxSensor;
-import mod.arcomit.parkour.v2.core.sensor.SensorManager;
+import mod.arcomit.parkour.v2.core.sensor.v2.SensorManager;
+import mod.arcomit.parkour.v2.core.sensor.v3.impl.JumpWallSensor;
 import mod.arcomit.parkour.v2.core.statemachine.ParkourStateMachine;
 import mod.arcomit.parkour.v2.core.statemachine.state.IParkourState;
 import net.minecraft.core.Direction;
@@ -27,22 +27,15 @@ import java.util.stream.Collectors;
  */
 public class WallJumpLogic {
 
-	static List<Direction> findCollisionDirs(Player player, SensorManager sensorManager) {
+	static List<Direction> findCollisionDirs(Player player) {
 		return Direction.Plane.HORIZONTAL.stream()
-			.filter(dir -> checkWallCollision(player, sensorManager, dir))
+			.filter(dir -> JumpWallSensor.isColliding(player, dir))
 			.collect(Collectors.toList());
 	}
 
-	static Direction findClosestCollisionDir(Player player, SensorManager sm) {
-		List<Direction> collidedDirs = findCollisionDirs(player, sm);
+	static Direction findClosestCollisionDir(Player player) {
+		List<Direction> collidedDirs = findCollisionDirs(player);
 		return DirectionUtils.getClosestDirection(player, collidedDirs);
-	}
-
-	private static boolean checkWallCollision(Player player, SensorManager sensorManager, Direction dir) {
-		AbstractBoxSensor feetSensor = sensorManager.getSensor("feet_wall_" + dir.getName());
-
-		return feetSensor != null
-			&& feetSensor.isColliding(player);
 	}
 
 
