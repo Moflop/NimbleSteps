@@ -1,0 +1,170 @@
+package mod.arcomit.parkour.content.handler;
+
+import mod.arcomit.parkour.ParkourMod;
+import mod.arcomit.parkour.content.behavior.crawl.network.ClientboundUpdateCrawlStatePacket;
+import mod.arcomit.parkour.content.behavior.crawl.network.ServerboundUpdateCrawlStatePacket;
+import mod.arcomit.parkour.content.action.swimmingjump.network.ServerboundUseSwimmingJumpPacket;
+import mod.arcomit.parkour.content.action.supportwalljump.network.ServerboundSupportWallJumpPacket;
+import mod.arcomit.parkour.content.behavior.mount.network.ServerboundMountPacket;
+import mod.arcomit.parkour.content.action.walljump.network.WallJumpC2SPayload;
+import mod.arcomit.parkour.content.behavior.landingroll.network.ServerboundSetLandingRollWindowPacket;
+import mod.arcomit.parkour.content.behavior.slide.network.ServerboundCancelSlidePacket;
+import mod.arcomit.parkour.content.behavior.slide.network.ServerboundUseSlidePacket;
+import mod.arcomit.parkour.content.behavior.armhang.network.ServerboundSyncArmHangingDirectionPacket;
+import mod.arcomit.parkour.content.action.swimmingboost.network.ServerboundUseSwimmingBoostPacket;
+import mod.arcomit.parkour.content.behavior.wallclimb.network.ServerboundEndWallClimbPacket;
+import mod.arcomit.parkour.content.behavior.wallclimb.network.ServerboundStartWallClimbPacket;
+import mod.arcomit.parkour.content.behavior.wallrun.network.ServerboundClampWallRunDurationPacket;
+import mod.arcomit.parkour.content.behavior.wallrun.network.ServerboundEndWallRunPacket;
+import mod.arcomit.parkour.content.behavior.wallrun.network.ServerboundStartWallRunPacket;
+import mod.arcomit.parkour.content.behavior.wallslide.network.ServerboundUpdateWallSlideStatePacket;
+import mod.arcomit.parkour.content.behavior.wallslide.network.BroadcastWallSlideDirS2CPayload;
+import mod.arcomit.parkour.core.client.animation.player.network.BroadcastPlayOneOffAnimS2CPayload;
+import mod.arcomit.parkour.core.client.animation.player.network.RequestPlayOneOffAnimC2SPayload;
+import mod.arcomit.parkour.core.statemachine.network.BroadcastStateChangeS2CPayload;
+import mod.arcomit.parkour.core.statemachine.network.RequestStateTransitionC2SPayload;
+import mod.arcomit.parkour.core.statemachine.network.ForceLocalPlayerStateS2CPayload;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+
+/**
+ * 注册网络通信数据包处理器。
+ *
+ * @author Arcomit
+ * @since 2025-12-21
+ */
+@EventBusSubscriber(modid = ParkourMod.MODID)
+public class RegisterPayloadHandler {
+
+	@SubscribeEvent
+	public static void register(RegisterPayloadHandlersEvent event) {
+		final PayloadRegistrar registrar = event.registrar("1");
+		registrar.playToClient(
+			ClientboundUpdateCrawlStatePacket.TYPE,
+			ClientboundUpdateCrawlStatePacket.STREAM_CODEC,
+			ClientboundUpdateCrawlStatePacket::handle
+		);
+		registrar.playToServer(
+			ServerboundUpdateCrawlStatePacket.TYPE,
+			ServerboundUpdateCrawlStatePacket.STREAM_CODEC,
+			ServerboundUpdateCrawlStatePacket::handle
+		);
+
+		registrar.playToServer(
+			ServerboundUseSlidePacket.TYPE,
+			ServerboundUseSlidePacket.STREAM_CODEC,
+			ServerboundUseSlidePacket::handle
+		);
+		registrar.playToServer(
+			ServerboundCancelSlidePacket.TYPE,
+			ServerboundCancelSlidePacket.STREAM_CODEC,
+			ServerboundCancelSlidePacket::handle
+		);
+		registrar.playToServer(
+			ServerboundUpdateWallSlideStatePacket.TYPE,
+			ServerboundUpdateWallSlideStatePacket.STREAM_CODEC,
+			ServerboundUpdateWallSlideStatePacket::handle
+		);
+
+		registrar.playToServer(
+			ServerboundSetLandingRollWindowPacket.TYPE,
+			ServerboundSetLandingRollWindowPacket.STREAM_CODEC,
+			ServerboundSetLandingRollWindowPacket::handle
+		);
+
+		registrar.playToServer(
+			ServerboundUseSwimmingBoostPacket.TYPE,
+			ServerboundUseSwimmingBoostPacket.STREAM_CODEC,
+			ServerboundUseSwimmingBoostPacket::handle
+		);
+
+		registrar.playToServer(
+			ServerboundStartWallRunPacket.TYPE,
+			ServerboundStartWallRunPacket.STREAM_CODEC,
+			ServerboundStartWallRunPacket::handle
+		);
+		registrar.playToServer(
+			ServerboundEndWallRunPacket.TYPE,
+			ServerboundEndWallRunPacket.STREAM_CODEC,
+			ServerboundEndWallRunPacket::handle
+		);
+		registrar.playToServer(
+			ServerboundClampWallRunDurationPacket.TYPE,
+			ServerboundClampWallRunDurationPacket.STREAM_CODEC,
+			ServerboundClampWallRunDurationPacket::handle
+		);
+
+		registrar.playToServer(
+			ServerboundStartWallClimbPacket.TYPE,
+			ServerboundStartWallClimbPacket.STREAM_CODEC,
+			ServerboundStartWallClimbPacket::handle
+		);
+		registrar.playToServer(
+			ServerboundEndWallClimbPacket.TYPE,
+			ServerboundEndWallClimbPacket.STREAM_CODEC,
+			ServerboundEndWallClimbPacket::handle
+		);
+
+		registrar.playToServer(
+			WallJumpC2SPayload.TYPE,
+			WallJumpC2SPayload.STREAM_CODEC,
+			WallJumpC2SPayload::handle
+		);
+		registrar.playToServer(
+			ServerboundSupportWallJumpPacket.TYPE,
+			ServerboundSupportWallJumpPacket.STREAM_CODEC,
+			ServerboundSupportWallJumpPacket::handle
+		);
+		registrar.playToServer(
+			ServerboundMountPacket.TYPE,
+			ServerboundMountPacket.STREAM_CODEC,
+			ServerboundMountPacket::handle
+		);
+		registrar.playToServer(
+			ServerboundUseSwimmingJumpPacket.TYPE,
+			ServerboundUseSwimmingJumpPacket.STREAM_CODEC,
+			ServerboundUseSwimmingJumpPacket::handle
+		);
+		registrar.playToServer(
+			ServerboundSyncArmHangingDirectionPacket.TYPE,
+			ServerboundSyncArmHangingDirectionPacket.STREAM_CODEC,
+			ServerboundSyncArmHangingDirectionPacket::handle
+		);
+
+		// ==================V2架构========================
+		registrar.playToServer(
+			RequestStateTransitionC2SPayload.TYPE,
+			RequestStateTransitionC2SPayload.STREAM_CODEC,
+			RequestStateTransitionC2SPayload::handle
+		);
+		registrar.playToClient(
+			ForceLocalPlayerStateS2CPayload.TYPE,
+			ForceLocalPlayerStateS2CPayload.STREAM_CODEC,
+			ForceLocalPlayerStateS2CPayload::handle
+		);
+		registrar.playToClient(
+			BroadcastStateChangeS2CPayload.TYPE,
+			BroadcastStateChangeS2CPayload.STREAM_CODEC,
+			BroadcastStateChangeS2CPayload::handle
+		);
+
+		registrar.playToServer(
+			RequestPlayOneOffAnimC2SPayload.TYPE,
+			RequestPlayOneOffAnimC2SPayload.STREAM_CODEC,
+			RequestPlayOneOffAnimC2SPayload::handle
+		);
+		registrar.playToClient(
+			BroadcastPlayOneOffAnimS2CPayload.TYPE,
+			BroadcastPlayOneOffAnimS2CPayload.STREAM_CODEC,
+			BroadcastPlayOneOffAnimS2CPayload::handle
+		);
+
+		registrar.playToClient(
+			BroadcastWallSlideDirS2CPayload.TYPE,
+			BroadcastWallSlideDirS2CPayload.STREAM_CODEC,
+			BroadcastWallSlideDirS2CPayload::handle
+		);
+	}
+}

@@ -1,9 +1,9 @@
 package mod.arcomit.parkour;
 
 import com.mojang.logging.LogUtils;
-import mod.arcomit.parkour.v2.content.init.ParkourAttachmentTypes;
-import mod.arcomit.parkour.v2.content.init.ParkourStates;
-import mod.arcomit.parkour.v2.content.init.ParkourSounds;
+import mod.arcomit.parkour.content.init.ParkourAttachmentTypes;
+import mod.arcomit.parkour.content.init.ParkourStates;
+import mod.arcomit.parkour.content.init.ParkourSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
