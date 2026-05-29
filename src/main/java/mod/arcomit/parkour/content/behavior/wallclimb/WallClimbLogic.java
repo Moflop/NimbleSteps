@@ -1,18 +1,11 @@
 package mod.arcomit.parkour.content.behavior.wallclimb;
 
 import mod.arcomit.parkour.ParkourConfig;
-import mod.arcomit.parkour.core.context.ParkourContext;
 import mod.arcomit.parkour.core.context.WallData;
-import mod.arcomit.parkour.core.proxy.ParkourProxies;
 import mod.arcomit.parkour.core.sensor.impl.HeadFeetSensor;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -54,6 +47,6 @@ public class WallClimbLogic {
 	 */
 	public static boolean checkWallCollision(Player player) {
 		Direction facing = player.getDirection();
-		return HeadFeetSensor.isColliding(player, facing);
+		return HeadFeetSensor.isValidCollision(player, facing);
 	}
 }

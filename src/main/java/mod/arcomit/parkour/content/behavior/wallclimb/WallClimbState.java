@@ -2,7 +2,6 @@ package mod.arcomit.parkour.content.behavior.wallclimb;
 
 import mod.arcomit.parkour.ParkourConfig;
 import mod.arcomit.parkour.content.behavior.wallclimb.server.ServerWallClimbSound;
-import mod.arcomit.parkour.content.behavior.wallrun.server.ServerWallRunSound;
 import mod.arcomit.parkour.core.context.JumpData;
 import mod.arcomit.parkour.core.context.WallData;
 import mod.arcomit.parkour.utils.PlayerStateUtils;
@@ -59,7 +58,7 @@ public class WallClimbState extends AbstractParkourState {
 	@Override
 	public void onServerTick(Player player, ParkourContext context) {
 		WallData wallData = context.wallData();
-		ServerWallClimbSound.playSound(player, wallData);
+		ServerWallClimbSound.playFootstepSound(player, wallData);
 	}
 
 	@Override

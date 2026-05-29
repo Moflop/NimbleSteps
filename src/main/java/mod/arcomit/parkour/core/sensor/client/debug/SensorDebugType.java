@@ -5,5 +5,7 @@ public enum SensorDebugType {
 	WALL_SLIDE,
 	WALL_RUN,
 	WALL_CLIMB,
-	WALL_JUMP
+	WALL_JUMP,
+	ARMHANG_EYE,
+	ARMHANG_TOP
 }

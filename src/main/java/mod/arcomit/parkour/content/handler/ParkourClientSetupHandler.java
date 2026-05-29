@@ -1,15 +1,15 @@
 package mod.arcomit.parkour.content.handler;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.content.behavior.wallclimb.client.WallClimbPlayerAnimModifier;
-import mod.arcomit.parkour.content.behavior.wallrun.client.WallRunPlayerAnimModifier;
+import mod.arcomit.parkour.content.behavior.wallclimb.client.animation.player.WallClimbPlayerAnimModifier;
+import mod.arcomit.parkour.content.behavior.wallrun.client.animation.player.WallRunPlayerAnimModifier;
 import mod.arcomit.parkour.content.init.ParkourStates;
 import mod.arcomit.parkour.content.init.ParkourPlayerAnimations;
 import mod.arcomit.parkour.core.client.animation.camera.CameraAnimationRegistry;
 import mod.arcomit.parkour.content.behavior.landingroll.client.animation.player.LandingRollPlayerAnimModifier;
 import mod.arcomit.parkour.content.behavior.slide.client.SlidePlayerAnimModifier;
 import mod.arcomit.parkour.core.client.animation.player.ClientAnimationRegistry;
-import mod.arcomit.parkour.content.behavior.wallslide.client.WallSlidePlayerAnimModifier;
+import mod.arcomit.parkour.content.behavior.wallslide.client.animation.player.WallSlidePlayerAnimModifier;
 import mod.arcomit.parkour.core.proxy.client.*;
 import mod.arcomit.parkour.core.proxy.ParkourProxies;
 import net.neoforged.api.distmarker.Dist;

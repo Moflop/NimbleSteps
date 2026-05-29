@@ -1,7 +1,6 @@
 package mod.arcomit.parkour.content.behavior.wallclimb.server;
 
 import mod.arcomit.parkour.core.context.WallData;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -22,7 +21,7 @@ public class ServerWallClimbSound {
 	private static final float SOUND_DISTANCE_MULTIPLIER = 1.2F;
 	private static final float SOUND_VOLUME_MULTIPLIER = 0.15F;
 
-	public static void playSound(Player player, WallData wallData) {
+	public static void playFootstepSound(Player player, WallData wallData) {
 		Level level = player.level();
 		// 必须在服务端执行
 		if (level.isClientSide()) {

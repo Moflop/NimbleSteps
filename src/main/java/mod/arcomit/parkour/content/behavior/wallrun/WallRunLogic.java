@@ -107,6 +107,6 @@ public class WallRunLogic {
 	 * 辅助方法：检测特定方向的墙壁碰撞
 	 */
 	private static boolean checkWallCollision(Player player, Direction dir) {
-		return HeadFeetSensor.isColliding(player, dir);
+		return HeadFeetSensor.isValidCollision(player, dir);
 	}
 }

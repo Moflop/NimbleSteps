@@ -3,13 +3,15 @@ package mod.arcomit.parkour.content.action.walljump.client.handler;
 import com.mojang.blaze3d.platform.InputConstants;
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.content.action.walljump.WallJumpAction;
+import mod.arcomit.parkour.content.action.walljump.network.WallJumpC2SPayload;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 
 /**
@@ -40,7 +42,7 @@ public class ClientWallJumpKeyInputHandler {
 	private static void handleKeyAction(int action, int inputKey) {
 		// 基本条件：玩家存在，没有界面打开，且按下的是跳跃键
 		Minecraft mc = Minecraft.getInstance();
-		Player player = mc.player;
+		LocalPlayer player = mc.player;
 		if (player == null || mc.screen != null) {
 			return;
 		}
@@ -55,7 +57,11 @@ public class ClientWallJumpKeyInputHandler {
 		}
 		lastJumpPressMs = now;
 
-		WallJumpAction.tryJump(player);
+		WallJumpAction.execute(player);
+		if (player.isLocalPlayer()) {
+			player.sendPosition();
+			PacketDistributor.sendToServer(new WallJumpC2SPayload());
+		}
 	}
 
 	private static boolean isJumpPress(Minecraft mc, int action, int inputKey) {

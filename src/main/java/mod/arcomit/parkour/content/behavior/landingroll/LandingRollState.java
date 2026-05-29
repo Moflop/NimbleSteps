@@ -1,8 +1,9 @@
 package mod.arcomit.parkour.content.behavior.landingroll;
 
 import mod.arcomit.parkour.ParkourConfig;
+import mod.arcomit.parkour.content.behavior.landingroll.client.ClientLandingRollAnimation;
 import mod.arcomit.parkour.utils.PlayerStateUtils;
-import mod.arcomit.parkour.content.behavior.landingroll.client.ClientLandingRollEffect;
+import mod.arcomit.parkour.content.behavior.landingroll.client.ClientLandingRollSound;
 import mod.arcomit.parkour.core.context.GroundData;
 import mod.arcomit.parkour.core.context.ParkourContext;
 import mod.arcomit.parkour.core.context.StateData;
@@ -33,9 +34,9 @@ public class LandingRollState extends AbstractParkourState {
 
 	@Override
 	public void onClientEnter(Player player, ParkourContext context) {
-		ClientLandingRollEffect.playSound(player);
+		ClientLandingRollSound.play(player);
 		if (player.isLocalPlayer()) {
-			ClientLandingRollEffect.playAnimation(player);
+			ClientLandingRollAnimation.playCameraAndPlayerAnim(player);
 		}
 	}
 

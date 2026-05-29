@@ -19,19 +19,6 @@ import net.neoforged.api.distmarker.OnlyIn;
  */
 @OnlyIn(Dist.CLIENT)
 public class ClientSlideLogic {
-	private static final float SLIDE_SOUND_VOLUME = 1.0f;
-	private static final float SLIDE_SOUND_PITCH = 1.0f;
-
-	public static void playSound(Player player) {
-		ParkourProxies.SOUND_PROXY.playEntityBoundSound(
-			ParkourSounds.SLIDE.get(),
-			SoundSource.PLAYERS,
-			SLIDE_SOUND_VOLUME,
-			SLIDE_SOUND_PITCH,
-			player,
-			player.getRandom().nextLong()
-		);
-	}
 
 	public static void applyPhysicsAndSendPosition(Player player) {
 		if (!player.isLocalPlayer()) return;

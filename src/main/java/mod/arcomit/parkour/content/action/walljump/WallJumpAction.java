@@ -1,15 +1,12 @@
 package mod.arcomit.parkour.content.action.walljump;
 
-import mod.arcomit.parkour.content.action.walljump.network.WallJumpC2SPayload;
 import mod.arcomit.parkour.core.context.JumpData;
 import mod.arcomit.parkour.core.context.ParkourContext;
-import mod.arcomit.parkour.core.proxy.ParkourProxies;
 import mod.arcomit.parkour.core.statemachine.ParkourStateMachine;
 import mod.arcomit.parkour.core.statemachine.state.IParkourState;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * TODO：描述
@@ -19,10 +16,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 public class WallJumpAction {
 
-	public static void tryJump(Player player) {
+	public static void execute(Player player) {
 		ParkourContext context = ParkourContext.get(player);
 		IParkourState currentState = context.stateData().getState();
-		if (!WallJumpEligibilityChecke.check(player, currentState)) return;
+		if (!WallJumpEligibilityChecker.check(player, currentState)) return;
 
 		// 墙面方向解析
 		Direction wallDir = WallJumpDirectionResolver.resolveWallDirection(player, currentState, context);
@@ -34,27 +31,21 @@ public class WallJumpAction {
 
 		// 同墙防止检查
 		JumpData jumpData = context.jumpData();
-		int wallDirValue = wallDir.get3DDataValue();
 		if (WallJumpSameWallGuard.isSameWallAsLastJump(jumpData, wallJumpType, wallDir)) return;
 
 		// 应用速度
 		Vec3 velocity = WallJumpVelocity.computeJumpVelocity(player, wallJumpType);
 		player.setDeltaMovement(velocity);
 
-		// 更新最近跳跃方向（单墙保护）
+		// 更新最近跳跃方向（只挨着一面墙时记录，如果挨着多面前可以无限次跳跃所以无需记录。）
 		if (WallJumpSameWallGuard.isAgainstSingleWall(player)) {
 			WallJumpSameWallGuard.recordLastJumpWall(jumpData, wallJumpType, wallDir);
 		}
 
-		// 重置状态、播放音效（一次，不再重复）
+		// 重置状态、播放音效
 		jumpData.setTicksSinceLastJump(0);
 		ParkourStateMachine.resetToDefaultState(player, context);
 		WallJumpSound.playWallJumpSound(player);
 		player.resetFallDistance();
-
-		if (player.isLocalPlayer()) {
-			ParkourProxies.PLAYER_SERVICES_PROXY.sendPosition(player);
-			PacketDistributor.sendToServer(new WallJumpC2SPayload());
-		}
 	}
 }

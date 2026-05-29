@@ -17,10 +17,10 @@ public class WallJumpDirectionResolver {
 	static Direction resolveWallDirection(Player player, IParkourState state, ParkourContext context) {
 		if (state == ParkourStates.WALL_RUN.get()) {
 			WallData wallData = context.wallData();
-			return Direction.from3DDataValue(wallData.getWallRunCollisionDir3DData());
+			return wallData.getWallRunCollisionDir();
 		} else if (state == ParkourStates.WALL_SLIDE.get()) {
 			WallData wallData = context.wallData();
-			return Direction.from3DDataValue(wallData.getWallSlideCollisionDir3DData());
+			return wallData.getWallSlideCollisionDir();
 		} else if (state == ParkourStates.DEFAULT.get() || state == ParkourStates.WALL_CLIMB.get()) {
 			return WallJumpCollisionFinder.findClosestCollisionDir(player);
 		}

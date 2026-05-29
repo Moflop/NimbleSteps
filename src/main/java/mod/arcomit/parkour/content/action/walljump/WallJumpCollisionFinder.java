@@ -1,7 +1,7 @@
 package mod.arcomit.parkour.content.action.walljump;
 
 import mod.arcomit.parkour.utils.DirectionUtils;
-import mod.arcomit.parkour.core.sensor.impl.JumpWallSensor;
+import mod.arcomit.parkour.core.sensor.impl.WallJumpSensor;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 
@@ -18,7 +18,7 @@ public class WallJumpCollisionFinder {
 
 	static List<Direction> findCollisionDirs(Player player) {
 		return Direction.Plane.HORIZONTAL.stream()
-			.filter(dir -> JumpWallSensor.isColliding(player, dir))
+			.filter(dir -> WallJumpSensor.isValidCollision(player, dir))
 			.collect(Collectors.toList());
 	}
 

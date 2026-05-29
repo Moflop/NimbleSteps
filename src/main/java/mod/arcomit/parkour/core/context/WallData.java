@@ -25,9 +25,7 @@ public class WallData {
 	private int wallRunMovementDir3DData = -1;
 	private int wallClimbCollisionDir3DData = -1;
 	private int wallSlideCollisionDir3DData = -1;
-
-	private boolean armHanging = false;
-	private int armHangingDir = -1;
+	private int armHangingDir3DData = -1;
 
 	private int mountDuration3DData = 0;
 	private double obstaclesHeight = 0.0;
@@ -36,6 +34,7 @@ public class WallData {
 	private Direction wallRunMovementDir;
 	private Direction wallClimbCollisionDir;
 	private Direction wallSlideCollisionDir;
+	private Direction armHangingDir;
 
 	public static final Codec<WallData> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(
@@ -43,8 +42,7 @@ public class WallData {
 			Codec.INT.optionalFieldOf("wallRunMovementDir3DData", 0).forGetter(WallData::getWallRunMovementDir3DData),
 			Codec.INT.optionalFieldOf("wallClimbCollisionDir3DData", 0).forGetter(WallData::getWallClimbCollisionDir3DData),
 			Codec.INT.optionalFieldOf("wallSlideCollisionDir3DData", -1).forGetter(WallData::getWallSlideCollisionDir3DData),
-			Codec.BOOL.optionalFieldOf("isArmHanging", false).forGetter(WallData::isArmHanging),
-			Codec.INT.optionalFieldOf("armHangingDir3DData", -1).forGetter(WallData::getArmHangingDir),
+			Codec.INT.optionalFieldOf("armHangingDir3DData", -1).forGetter(WallData::getArmHangingDir3DData),
 			Codec.INT.optionalFieldOf("mountDuration", 0).forGetter(WallData::getMountDuration3DData),
 			Codec.DOUBLE.optionalFieldOf("obstaclesHeight", 0.0).forGetter(WallData::getObstaclesHeight)
 		).apply(instance, WallData::new)
@@ -56,8 +54,7 @@ public class WallData {
 			ByteBufCodecs.VAR_INT.encode(buf, data.getWallRunMovementDir3DData());
 			ByteBufCodecs.VAR_INT.encode(buf, data.getWallClimbCollisionDir3DData());
 			ByteBufCodecs.VAR_INT.encode(buf, data.getWallSlideCollisionDir3DData());
-			ByteBufCodecs.BOOL.encode(buf, data.isArmHanging());
-			ByteBufCodecs.VAR_INT.encode(buf, data.getArmHangingDir());
+			ByteBufCodecs.VAR_INT.encode(buf, data.getArmHangingDir3DData());
 			ByteBufCodecs.VAR_INT.encode(buf, data.getMountDuration3DData());
 			ByteBufCodecs.DOUBLE.encode(buf, data.getObstaclesHeight());
 		},
@@ -66,7 +63,6 @@ public class WallData {
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
-			ByteBufCodecs.BOOL.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.VAR_INT.decode(buf),
 			ByteBufCodecs.DOUBLE.decode(buf)
@@ -74,15 +70,14 @@ public class WallData {
 	);
 
 	public WallData(int wallRunCollisionDir3DData, int wallRunMovementDir3DData,
-			int wallClimbCollisionDir3DData, int wallSlideCollisionDir3DData,
-			boolean armHanging, int armHangingDir,
-			int mountDuration3DData, double obstaclesHeight) {
+	                int wallClimbCollisionDir3DData, int wallSlideCollisionDir3DData,
+	                int armHangingDir3DData, int mountDuration3DData,
+	                double obstaclesHeight) {
 		this.wallRunCollisionDir3DData = wallRunCollisionDir3DData;
 		this.wallRunMovementDir3DData = wallRunMovementDir3DData;
 		this.wallClimbCollisionDir3DData = wallClimbCollisionDir3DData;
 		this.wallSlideCollisionDir3DData = wallSlideCollisionDir3DData;
-		this.armHanging = armHanging;
-		this.armHangingDir = armHangingDir;
+		this.armHangingDir3DData = armHangingDir3DData;
 		this.mountDuration3DData = mountDuration3DData;
 		this.obstaclesHeight = obstaclesHeight;
 	}
@@ -92,8 +87,7 @@ public class WallData {
 		this.wallRunMovementDir3DData = other.wallRunMovementDir3DData;
 		this.wallClimbCollisionDir3DData = other.wallClimbCollisionDir3DData;
 		this.wallSlideCollisionDir3DData = other.wallSlideCollisionDir3DData;
-		this.armHanging = other.armHanging;
-		this.armHangingDir = other.armHangingDir;
+		this.armHangingDir3DData = other.armHangingDir3DData;
 		this.mountDuration3DData = other.mountDuration3DData;
 		this.obstaclesHeight = other.obstaclesHeight;
 	}
@@ -168,5 +162,23 @@ public class WallData {
 	public void resetWallSlideCollisionDir() {
 		wallSlideCollisionDir = null;
 		wallSlideCollisionDir3DData = -1;
+	}
+
+	public Direction getArmhangDir() {
+		if (armHangingDir == null) {
+			if (armHangingDir3DData == -1) {
+				return null;
+			}
+			armHangingDir = Direction.from3DDataValue(armHangingDir3DData);
+		}
+		return armHangingDir;
+	}
+	public void setArmhangDir(Direction dir) {
+		armHangingDir = dir;
+		armHangingDir3DData = dir == null ? -1 : dir.get3DDataValue();
+	}
+	public void resetArmhangDir() {
+		armHangingDir = null;
+		armHangingDir3DData = -1;
 	}
 }

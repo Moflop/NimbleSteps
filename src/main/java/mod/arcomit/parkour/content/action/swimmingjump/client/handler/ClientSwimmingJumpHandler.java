@@ -1,8 +1,8 @@
 package mod.arcomit.parkour.content.action.swimmingjump.client.handler;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.content.action.swimmingjump.network.ServerboundUseSwimmingJumpPacket;
-import mod.arcomit.parkour.content.action.swimmingjump.SwimmingJumpLogic;
+import mod.arcomit.parkour.content.action.swimmingjump.network.UseSwimmingJumpC2SPayload;
+import mod.arcomit.parkour.content.action.swimmingjump.SwimmingJumpAction;
 import mod.arcomit.parkour.core.context.ParkourContext;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -30,12 +30,9 @@ public class ClientSwimmingJumpHandler {
 		if (!(player instanceof LocalPlayer localPlayer)) {
 			return;
 		}
-		ParkourContext state = ParkourContext.get(localPlayer);
-		if (!SwimmingJumpLogic.canSwimmingJump(localPlayer, state)) {
-			return;
-		}
 
-		SwimmingJumpLogic.applySwimmingJumpMovement(localPlayer);
-		PacketDistributor.sendToServer(new ServerboundUseSwimmingJumpPacket());
+		SwimmingJumpAction.execute(localPlayer);
+		localPlayer.sendPosition();
+		PacketDistributor.sendToServer(new UseSwimmingJumpC2SPayload());
 	}
 }

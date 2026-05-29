@@ -1,6 +1,7 @@
 package mod.arcomit.parkour.content.behavior.slide;
 
 import mod.arcomit.parkour.ParkourConfig;
+import mod.arcomit.parkour.content.behavior.slide.client.ClientSlideSound;
 import mod.arcomit.parkour.utils.PlayerStateUtils;
 import mod.arcomit.parkour.content.behavior.slide.client.ClientSlideLogic;
 import mod.arcomit.parkour.content.init.ParkourStates;
@@ -42,7 +43,7 @@ public class SlideState extends AbstractParkourState {
 
 	@Override
 	public void onClientEnter(Player player, ParkourContext context) {
-		ClientSlideLogic.playSound(player);
+		ClientSlideSound.play(player);
 		if (player.isLocalPlayer()) {
 			ClientSlideLogic.applyPhysicsAndSendPosition(player);
 		}

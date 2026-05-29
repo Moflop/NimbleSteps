@@ -22,8 +22,7 @@ public class FreestyleHandler {
 	@SubscribeEvent
 	public static void tryFreestyleSwimming(PlayerTickEvent.Post event) {
 		Player player = event.getEntity();
-		ParkourContext state = ParkourContext.get(player);
-		if (!canFreestyle(player, state)) {
+		if (!canFreestyle(player)) {
 			return;
 		}
 
@@ -36,10 +35,16 @@ public class FreestyleHandler {
 		player.setDeltaMovement(motion.x, 0, motion.z);
 	}
 
-	public static boolean canFreestyle(Player player, ParkourContext state) {
-		return ParkourConfig.enableFreestyle
-			&& player.isSwimming()
-			&& !player.isUnderWater()
-			&& PlayerStateUtils.isAbleToAction(player);
+	public static boolean canFreestyle(Player player) {
+		if (!ParkourConfig.enableFreestyle || !player.isSwimming()
+			|| player.isUnderWater() || !PlayerStateUtils.isAbleToAction(player)) {
+			return false;
+		}
+		Vec3 motion = player.getDeltaMovement();
+		boolean isFalling = motion.y < 0;
+		if (isFalling) {
+			return false;
+		}
+		return true;
 	}
 }

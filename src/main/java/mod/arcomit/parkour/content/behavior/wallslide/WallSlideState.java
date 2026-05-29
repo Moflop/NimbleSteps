@@ -82,7 +82,11 @@ public class WallSlideState extends AbstractParkourState {
 
 	@Override
 	public boolean canEnter(Player player, ParkourContext context) {
-		return isBaseValid(player, context);
+		if (!isBaseValid(player, context)) {
+			return false;
+		}
+		boolean isFalling = player.getDeltaMovement().y() < 0;
+		return isFalling;
 	}
 
 	@Override

@@ -49,7 +49,7 @@ public class DebugCommandHandler {
 					.then(Commands.literal("wall_climb")
 						.executes(context -> {
 							DebugSensorRenderHandler.DEBUG_TYPE = SensorDebugType.WALL_CLIMB;
-							context.getSource().sendSystemMessage(Component.literal("§e[Parkour] §aSensor Debug: ALL WALL CLIMB"));
+							context.getSource().sendSystemMessage(Component.literal("§e[Parkour] §aSensor Debug: ONLY WALL CLIMB"));
 							return 1;
 						})
 					)
@@ -57,7 +57,23 @@ public class DebugCommandHandler {
 					.then(Commands.literal("wall_jump")
 						.executes(context -> {
 							DebugSensorRenderHandler.DEBUG_TYPE = SensorDebugType.WALL_JUMP;
-							context.getSource().sendSystemMessage(Component.literal("§e[Parkour] §aSensor Debug: ALL WALL JUMP"));
+							context.getSource().sendSystemMessage(Component.literal("§e[Parkour] §aSensor Debug: ONLY WALL JUMP"));
+							return 1;
+						})
+					)
+					// /parkour debug armhang_eye
+					.then(Commands.literal("armhang_eye")
+						.executes(context -> {
+							DebugSensorRenderHandler.DEBUG_TYPE = SensorDebugType.ARMHANG_EYE;
+							context.getSource().sendSystemMessage(Component.literal("§e[Parkour] §aSensor Debug: ONLY ARMHANG EYE"));
+							return 1;
+						})
+					)
+					// /parkour debug armhang_top
+					.then(Commands.literal("armhang_top")
+						.executes(context -> {
+							DebugSensorRenderHandler.DEBUG_TYPE = SensorDebugType.ARMHANG_TOP;
+							context.getSource().sendSystemMessage(Component.literal("§e[Parkour] §aSensor Debug: ONLY ARMHANG TOP"));
 							return 1;
 						})
 					)

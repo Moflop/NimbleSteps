@@ -4,8 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import mod.arcomit.parkour.ParkourMod;
 import mod.arcomit.parkour.core.sensor.client.debug.SensorDebugType;
+import mod.arcomit.parkour.core.sensor.impl.ArmhangEyeSensor;
+import mod.arcomit.parkour.core.sensor.impl.ArmhangTopSensor;
 import mod.arcomit.parkour.core.sensor.impl.HeadFeetSensor;
-import mod.arcomit.parkour.core.sensor.impl.JumpWallSensor;
+import mod.arcomit.parkour.core.sensor.impl.WallJumpSensor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -90,26 +92,36 @@ public class DebugSensorRenderHandler {
 
 		switch (DEBUG_TYPE) {
 			case WALL_SLIDE:
-				checker = HeadFeetSensor::isColliding;
+				checker = HeadFeetSensor::isValidCollision;
 				provider = HeadFeetSensor::getBoxes;
 				directions = HORIZONTALS;
 				break;
 			case WALL_RUN: {
 				Direction facing = player.getDirection();
-				checker = HeadFeetSensor::isColliding;
+				checker = HeadFeetSensor::isValidCollision;
 				provider = HeadFeetSensor::getBoxes;
 				directions = List.of(facing.getCounterClockWise(), facing.getClockWise());
 				break;
 			}
 			case WALL_CLIMB:
-				checker = HeadFeetSensor::isColliding;
+				checker = HeadFeetSensor::isValidCollision;
 				provider = HeadFeetSensor::getBoxes;
 				directions = List.of(player.getDirection());
 				break;
 			case WALL_JUMP:
-				checker = JumpWallSensor::isColliding;
-				provider = JumpWallSensor::getBoxes;
+				checker = WallJumpSensor::isValidCollision;
+				provider = WallJumpSensor::getBoxes;
 				directions = HORIZONTALS;
+				break;
+			case ARMHANG_EYE:
+				checker = ArmhangEyeSensor::isValidCollision;
+				provider = ArmhangEyeSensor::getBoxes;
+				directions = List.of(player.getDirection());
+				break;
+			case ARMHANG_TOP:
+				checker = ArmhangTopSensor::isValidCollision;
+				provider = ArmhangTopSensor::getBoxes;
+				directions = List.of(player.getDirection());
 				break;
 			default:
 				poseStack.popPose();

@@ -2,7 +2,6 @@ package mod.arcomit.parkour.content.behavior.wallslide;
 
 import mod.arcomit.parkour.core.context.WallData;
 import mod.arcomit.parkour.utils.DirectionUtils;
-import mod.arcomit.parkour.core.context.ParkourContext;
 import mod.arcomit.parkour.content.behavior.wallslide.network.BroadcastWallSlideDirS2CPayload;
 import mod.arcomit.parkour.core.sensor.impl.HeadFeetSensor;
 import net.minecraft.core.Direction;
@@ -92,6 +91,6 @@ public class WallSlideLogic {
 	}
 
 	private static boolean checkWallCollision(Player player, Direction dir) {
-		return HeadFeetSensor.isColliding(player, dir);
+		return HeadFeetSensor.isValidCollision(player, dir);
 	}
 }

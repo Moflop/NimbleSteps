@@ -2,11 +2,11 @@ package mod.arcomit.parkour.content.init;
 
 import mod.arcomit.parkour.ParkourMod;
 //import mod.arcomit.parkour.v2.content.behavior.armhang.ArmhangState;
+import mod.arcomit.parkour.content.behavior.armhang.ArmhangState;
 import mod.arcomit.parkour.content.behavior.backstep.BackstepState;
 import mod.arcomit.parkour.content.behavior.base.DefaultState;
 import mod.arcomit.parkour.content.behavior.crawl.CrawlState;
 import mod.arcomit.parkour.content.behavior.landingroll.LandingRollState;
-import mod.arcomit.parkour.content.behavior.mount.MountState;
 import mod.arcomit.parkour.content.behavior.slide.SlideState;
 import mod.arcomit.parkour.content.behavior.wallclimb.WallClimbState;
 import mod.arcomit.parkour.content.behavior.wallrun.WallRunState;
@@ -41,9 +41,9 @@ public class ParkourStates {
 
 	public static final DeferredHolder<IParkourState, WallClimbState> WALL_CLIMB = PARKOUR_STATES.register("wall_climb", WallClimbState::new);
 
-//	public static final DeferredHolder<IParkourState, ArmhangState> ARMHANG = PARKOUR_STATES.register("armhang", ArmhangState::new);
+	public static final DeferredHolder<IParkourState, ArmhangState> ARMHANG = PARKOUR_STATES.register("armhang", ArmhangState::new);
 
-	public static final DeferredHolder<IParkourState, MountState> MOUNT = PARKOUR_STATES.register("mount", MountState::new);
+//	public static final DeferredHolder<IParkourState, MountState> MOUNT = PARKOUR_STATES.register("mount", MountState::new);
 
 	public static void register(IEventBus modEventBus) {
 		PARKOUR_STATES.register(modEventBus);

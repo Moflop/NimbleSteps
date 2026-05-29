@@ -1,13 +1,14 @@
 package mod.arcomit.parkour.content.action.swimmingboost.client.handler;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.content.action.swimmingboost.network.ServerboundUseSwimmingBoostPacket;
+import mod.arcomit.parkour.content.action.swimmingboost.client.ClientSwimmingBoostSound;
+import mod.arcomit.parkour.content.action.swimmingboost.network.UseSwimmingBoostC2SPayload;
 import mod.arcomit.parkour.content.client.input.ParkourKeyBindings;
 import mod.arcomit.parkour.content.client.input.ParkourKeyMapping;
 import mod.arcomit.parkour.content.client.event.InputJustPressedEvent;
 import mod.arcomit.parkour.core.context.ParkourContext;
 import mod.arcomit.parkour.core.context.SwimData;
-import mod.arcomit.parkour.content.action.swimmingboost.SwimmingBoostLogic;
+import mod.arcomit.parkour.content.action.swimmingboost.SwimmingBoostAction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.api.distmarker.Dist;
@@ -39,16 +40,11 @@ public class ClientSwimmingBoostHandler {
 		}
 
 		SwimData swimData = ParkourContext.get(player).swimData();
-
-		// 调用逻辑层的判断条件
-		if (!SwimmingBoostLogic.canSwimmingBoost(player, swimData)) {
-			return;
+		if (SwimmingBoostAction.execute(player, swimData)) {
+			ClientSwimmingBoostSound.play(player);
 		}
 
-		// 1. 本地客户端执行推进逻辑
-		SwimmingBoostLogic.useSwimmingBoost(player, swimData);
-
-		// 2. 告知服务端执行相同的逻辑
-		PacketDistributor.sendToServer(new ServerboundUseSwimmingBoostPacket());
+		player.sendPosition();
+		PacketDistributor.sendToServer(new UseSwimmingBoostC2SPayload());
 	}
 }

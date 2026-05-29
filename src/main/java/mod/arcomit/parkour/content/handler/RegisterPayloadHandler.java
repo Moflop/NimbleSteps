@@ -1,23 +1,12 @@
 package mod.arcomit.parkour.content.handler;
 
 import mod.arcomit.parkour.ParkourMod;
-import mod.arcomit.parkour.content.behavior.crawl.network.ClientboundUpdateCrawlStatePacket;
-import mod.arcomit.parkour.content.behavior.crawl.network.ServerboundUpdateCrawlStatePacket;
-import mod.arcomit.parkour.content.action.swimmingjump.network.ServerboundUseSwimmingJumpPacket;
-import mod.arcomit.parkour.content.action.supportwalljump.network.ServerboundSupportWallJumpPacket;
-import mod.arcomit.parkour.content.behavior.mount.network.ServerboundMountPacket;
+import mod.arcomit.parkour.content.action.swimmingjump.network.UseSwimmingJumpC2SPayload;
+import mod.arcomit.parkour.content.action.supportwalljump.network.SupportWallJumpC2SPayload;
 import mod.arcomit.parkour.content.action.walljump.network.WallJumpC2SPayload;
 import mod.arcomit.parkour.content.behavior.landingroll.network.ServerboundSetLandingRollWindowPacket;
-import mod.arcomit.parkour.content.behavior.slide.network.ServerboundCancelSlidePacket;
-import mod.arcomit.parkour.content.behavior.slide.network.ServerboundUseSlidePacket;
 import mod.arcomit.parkour.content.behavior.armhang.network.ServerboundSyncArmHangingDirectionPacket;
-import mod.arcomit.parkour.content.action.swimmingboost.network.ServerboundUseSwimmingBoostPacket;
-import mod.arcomit.parkour.content.behavior.wallclimb.network.ServerboundEndWallClimbPacket;
-import mod.arcomit.parkour.content.behavior.wallclimb.network.ServerboundStartWallClimbPacket;
-import mod.arcomit.parkour.content.behavior.wallrun.network.ServerboundClampWallRunDurationPacket;
-import mod.arcomit.parkour.content.behavior.wallrun.network.ServerboundEndWallRunPacket;
-import mod.arcomit.parkour.content.behavior.wallrun.network.ServerboundStartWallRunPacket;
-import mod.arcomit.parkour.content.behavior.wallslide.network.ServerboundUpdateWallSlideStatePacket;
+import mod.arcomit.parkour.content.action.swimmingboost.network.UseSwimmingBoostC2SPayload;
 import mod.arcomit.parkour.content.behavior.wallslide.network.BroadcastWallSlideDirS2CPayload;
 import mod.arcomit.parkour.core.client.animation.player.network.BroadcastPlayOneOffAnimS2CPayload;
 import mod.arcomit.parkour.core.client.animation.player.network.RequestPlayOneOffAnimC2SPayload;
@@ -41,32 +30,6 @@ public class RegisterPayloadHandler {
 	@SubscribeEvent
 	public static void register(RegisterPayloadHandlersEvent event) {
 		final PayloadRegistrar registrar = event.registrar("1");
-		registrar.playToClient(
-			ClientboundUpdateCrawlStatePacket.TYPE,
-			ClientboundUpdateCrawlStatePacket.STREAM_CODEC,
-			ClientboundUpdateCrawlStatePacket::handle
-		);
-		registrar.playToServer(
-			ServerboundUpdateCrawlStatePacket.TYPE,
-			ServerboundUpdateCrawlStatePacket.STREAM_CODEC,
-			ServerboundUpdateCrawlStatePacket::handle
-		);
-
-		registrar.playToServer(
-			ServerboundUseSlidePacket.TYPE,
-			ServerboundUseSlidePacket.STREAM_CODEC,
-			ServerboundUseSlidePacket::handle
-		);
-		registrar.playToServer(
-			ServerboundCancelSlidePacket.TYPE,
-			ServerboundCancelSlidePacket.STREAM_CODEC,
-			ServerboundCancelSlidePacket::handle
-		);
-		registrar.playToServer(
-			ServerboundUpdateWallSlideStatePacket.TYPE,
-			ServerboundUpdateWallSlideStatePacket.STREAM_CODEC,
-			ServerboundUpdateWallSlideStatePacket::handle
-		);
 
 		registrar.playToServer(
 			ServerboundSetLandingRollWindowPacket.TYPE,
@@ -75,36 +38,9 @@ public class RegisterPayloadHandler {
 		);
 
 		registrar.playToServer(
-			ServerboundUseSwimmingBoostPacket.TYPE,
-			ServerboundUseSwimmingBoostPacket.STREAM_CODEC,
-			ServerboundUseSwimmingBoostPacket::handle
-		);
-
-		registrar.playToServer(
-			ServerboundStartWallRunPacket.TYPE,
-			ServerboundStartWallRunPacket.STREAM_CODEC,
-			ServerboundStartWallRunPacket::handle
-		);
-		registrar.playToServer(
-			ServerboundEndWallRunPacket.TYPE,
-			ServerboundEndWallRunPacket.STREAM_CODEC,
-			ServerboundEndWallRunPacket::handle
-		);
-		registrar.playToServer(
-			ServerboundClampWallRunDurationPacket.TYPE,
-			ServerboundClampWallRunDurationPacket.STREAM_CODEC,
-			ServerboundClampWallRunDurationPacket::handle
-		);
-
-		registrar.playToServer(
-			ServerboundStartWallClimbPacket.TYPE,
-			ServerboundStartWallClimbPacket.STREAM_CODEC,
-			ServerboundStartWallClimbPacket::handle
-		);
-		registrar.playToServer(
-			ServerboundEndWallClimbPacket.TYPE,
-			ServerboundEndWallClimbPacket.STREAM_CODEC,
-			ServerboundEndWallClimbPacket::handle
+			UseSwimmingBoostC2SPayload.TYPE,
+			UseSwimmingBoostC2SPayload.STREAM_CODEC,
+			UseSwimmingBoostC2SPayload::handle
 		);
 
 		registrar.playToServer(
@@ -113,19 +49,14 @@ public class RegisterPayloadHandler {
 			WallJumpC2SPayload::handle
 		);
 		registrar.playToServer(
-			ServerboundSupportWallJumpPacket.TYPE,
-			ServerboundSupportWallJumpPacket.STREAM_CODEC,
-			ServerboundSupportWallJumpPacket::handle
+			SupportWallJumpC2SPayload.TYPE,
+			SupportWallJumpC2SPayload.STREAM_CODEC,
+			SupportWallJumpC2SPayload::handle
 		);
 		registrar.playToServer(
-			ServerboundMountPacket.TYPE,
-			ServerboundMountPacket.STREAM_CODEC,
-			ServerboundMountPacket::handle
-		);
-		registrar.playToServer(
-			ServerboundUseSwimmingJumpPacket.TYPE,
-			ServerboundUseSwimmingJumpPacket.STREAM_CODEC,
-			ServerboundUseSwimmingJumpPacket::handle
+			UseSwimmingJumpC2SPayload.TYPE,
+			UseSwimmingJumpC2SPayload.STREAM_CODEC,
+			UseSwimmingJumpC2SPayload::handle
 		);
 		registrar.playToServer(
 			ServerboundSyncArmHangingDirectionPacket.TYPE,

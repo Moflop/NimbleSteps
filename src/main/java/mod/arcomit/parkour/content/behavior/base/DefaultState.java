@@ -59,6 +59,11 @@ public class DefaultState extends AbstractParkourState {
 				}
 			},
 
+			IParkourStateTransition.onLocalTick(
+				ParkourStates.ARMHANG::get,
+				(player, context) -> context.jumpData().isJumped()
+			),
+
 			// 5. 在空中下落，靠近墙壁，距离上次跳跃在15tick内，有向前冲量并且按住跳跃键 -> 进入墙跑
 			// 注意：放在滑墙之前，作为高优先级判定
 			IParkourStateTransition.onLocalTick(
@@ -80,11 +85,6 @@ public class DefaultState extends AbstractParkourState {
 				ParkourStates.WALL_SLIDE::get,
 				(player, context) -> ParkourProxies.INPUT_PROXY.getJumping(player)
 			)
-//
-//			IParkourStateTransition.onTick(
-//				ParkourStates.ARMHANG::get,
-//				(player, context) -> true
-//			)
 		);
 	}
 }

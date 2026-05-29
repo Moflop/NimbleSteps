@@ -39,7 +39,7 @@ public class HeadFeetSensor {
 		return collisionCache.getCollisionBoxes();
 	}
 
-	public static boolean isColliding(Player player, Direction direction) {
+	public static boolean isValidCollision(Player player, Direction direction) {
 		SensorData data = SensorDataManager.get(player).getData(SensorType.HEAD_FEET);
 		CollisionCache collisionCache = data.getCollisionCache(direction);
 		updateCacheIfNeeded(collisionCache, player, direction);
